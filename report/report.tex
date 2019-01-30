@@ -1,0 +1,76 @@
+\documentclass{scrreprt}
+
+% Equations
+\usepackage{amsmath}
+
+% List customization
+\usepackage[inline]{enumitem}
+
+% They are all over the place
+\usepackage{todonotes}
+
+% Sub-figures
+\usepackage{subcaption}
+
+% Diagrams
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usepackage{pgfgantt}
+
+% inline arithmetic operations
+\usepackage{fp}
+
+% Appendices
+\usepackage[header,title,titletoc]{appendix}
+\renewcommand{\appendixname}{Appendix}
+
+% License
+\usepackage[
+    type={CC},
+    modifier={by-sa},
+    version={3.0},
+]{doclicense}
+
+% Add bibliography to TOC
+\usepackage[nottoc,numbib]{tocbibind}
+
+% Sane datestamps
+\usepackage[yyyymmdd]{datetime}
+\renewcommand{\dateseparator}{--}
+
+% Inference rules
+\usepackage{mathpartir}
+
+% Math symbols
+\usepackage{amssymb}
+
+\begin{document}
+
+\title{Integrating security and fault tres}
+\author{Uma Zalakain}
+\maketitle
+\pagenumbering{roman}
+
+\newpage
+\vfill{}
+\doclicenseThis
+\newpage
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
+
+\newpage
+\begin{appendices}
+% Only display section titles in the TOC
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}} 
+\end{appendices}
+
+\end{document}
