@@ -1,4 +1,4 @@
-module Language.SFT where
+module Language.ADTrees where
 
 import Data.List (sortOn)
 
