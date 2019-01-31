@@ -1,54 +1,61 @@
 module Language.ADTrees where
 
-import Data.List (sortOn)
-
 -- TODO: mention https://github.com/tomahawkins/fault-tree
 
 type Name = String
-type Probability = Rational
+data Player = Attacker | Defender
 
-data Event
-    = Leaf Name Probability
-    | Branch Name Event
-    | Not Event
-    | And [Event]
-    | Or [Event]
+-- Domain for any given player
+data Domain a b = MkDomain
+    { get     :: a -> b
+    , or      :: a -> b -> b
+    , and     :: a -> b -> b
+    , counter :: a -> b -> b
+    }
+
+-- Attack-defense domains
+data ADDomain a b = MkADDomain (Domain a b) (Domain a b)
+
+pd :: Player -> ADDomain a b -> Domain a b
+pd Attacker (MkADDomain a _) = a
+pd Defender (MkADDomain _ d) = d
+
+data Event a 
+    = Basic Name a
+    | Comment Name (Event a)
+    | Counter (Event a)
+    | And [Event a]
+    | Or [Event a]
     deriving (Show, Eq)
 
-probability :: Event -> Probability
-probability (Leaf _ p) = p
-probability (Branch _ e) = probability e
-probability (Not e) = 1 - probability e
-probability (And es) = product (map probability es)
-probability (Or es) = sum (map probability es)
+aggregate :: ADDomain a b -> Player -> Event a -> b
+aggregate d p (Basic _ a) = get (pd p d) a
+aggregate d p (Comment _ e) = aggregate d p e
+aggregate d p (Counter e) = undefined
+aggregate d p (And es) = undefined
+aggregate d p (Or es) = undefined
 
-cutsets :: Event -> [Event]
-cutsets (Leaf n p) = [Leaf n p]
-cutsets (Branch n e) = map (Branch n) (cutsets e)
-cutsets (Not e) = map Not (cutsets e)
+cutsets :: Event a -> [Event a]
+cutsets (Basic n p) = [Basic n p]
+cutsets (Comment n e) = map (Comment n) (cutsets e)
+cutsets (Counter e) = map Counter (cutsets e)
 cutsets (And es) = map And (mapM cutsets es) -- cartesian product
 cutsets (Or es) = concatMap cutsets es
 
-byProbability :: [Event] -> [Event]
-byProbability = sortOn probability
-
-cutoffAcceptable :: Rational -> [Event] -> [Event]
-cutoffAcceptable p = filter ((<= p) . probability)
-
-example :: Event
-example = Branch "Enemy forges package" (Or [ 
-    Branch "Enemy signs forged package" (
-        Branch "Enemy has secret key" (
+example :: Event Rational
+example = Comment "Enemy forges package" (Or [ 
+    Comment "Enemy signs forged package" (
+        Comment "Enemy has secret key" (
             Or [
-                Leaf "Enemy has stolen secret key" 0.2,
-                Branch "Enemy has calculated secret key" (
+                Basic "Enemy has stolen secret key" 0.2,
+                Comment "Enemy has calculated secret key" (
                     Or [
-                        Leaf "Poor key generation allows secret key to be easily derived" 0.1,
-                        Leaf "Unknown vulnerability in hash algorithm is exploited" 0.1,
-                        Branch "Enemy uses known attack on weak hash algorithm" (
+                        Basic "Poor key generation allows secret key to be easily derived" 0.1,
+                        Basic "Unknown vulnerability in hash algorithm is exploited" 0.1,
+                        Comment "Enemy uses known attack on weak hash algorithm" (
                             And [
-                                Leaf "Enemy applies known attack to hash algorithm" 0.5,
-                                Leaf "Poor choice of hash algorithm" 0.1
+                                Basic "Enemy applies known attack to hash algorithm" 0.5,
+                                Basic "Poor choice of hash algorithm" 0.1
                             ]
                         )
                     ]
@@ -56,15 +63,15 @@ example = Branch "Enemy forges package" (Or [
             ]
         )
     ),
-    Branch "Enemy replaces genuine archive with malicious archive" (
-        Branch "Enemy has constructed malicious archive with same hash as genuine archive" (
-            Branch "Enemy has effectively broken hash algorithm" (
+    Comment "Enemy replaces genuine archive with malicious archive" (
+        Comment "Enemy has constructed malicious archive with same hash as genuine archive" (
+            Comment "Enemy has effectively broken hash algorithm" (
                 Or [
-                    Leaf "Unknown vulnerability in hash algorithm is exploited" 0.1,
-                    Branch "Enemy uses known attack on weak hash algorithm" (
+                    Basic "Unknown vulnerability in hash algorithm is exploited" 0.1,
+                    Comment "Enemy uses known attack on weak hash algorithm" (
                         And [
-                            Leaf "Enemy applies known attack to hash algorithm" 1.0,
-                            Leaf "Poor choice of hash algorithm" 0.1
+                            Basic "Enemy applies known attack to hash algorithm" 1.0,
+                            Basic "Poor choice of hash algorithm" 0.1
                         ]
                     )
                 ]
