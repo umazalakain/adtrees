@@ -1,24 +1,27 @@
 module Language.ADTrees where
 
+import Prelude hiding (or, and, min, max)
+
 -- TODO: mention https://github.com/tomahawkins/fault-tree
 
 type Name = String
-data Player = Attacker | Defender
 
--- Domain for any given player
+data Faction = Proponent | Opponent
+invert :: Faction -> Faction
+invert Proponent = Opponent
+invert Opponent = Proponent
+
+-- Domain for a given faction
 data Domain a b = MkDomain
     { get     :: a -> b
-    , or      :: a -> b -> b
-    , and     :: a -> b -> b
-    , counter :: a -> b -> b
+    , neutral :: b
+    , or      :: b -> b -> b
+    , and     :: b -> b -> b
+    , counter :: b -> b
     }
 
 -- Attack-defense domains
-data ADDomain a b = MkADDomain (Domain a b) (Domain a b)
-
-pd :: Player -> ADDomain a b -> Domain a b
-pd Attacker (MkADDomain a _) = a
-pd Defender (MkADDomain _ d) = d
+type ADDomain a b = Faction -> Domain a b
 
 data Event a 
     = Basic Name a
@@ -28,19 +31,65 @@ data Event a
     | Or [Event a]
     deriving (Show, Eq)
 
-aggregate :: ADDomain a b -> Player -> Event a -> b
-aggregate d p (Basic _ a) = get (pd p d) a
+aggregate :: ADDomain a b -> Faction -> Event a -> b
+aggregate d p (Basic _ a) = get (d p) a
 aggregate d p (Comment _ e) = aggregate d p e
-aggregate d p (Counter e) = undefined
-aggregate d p (And es) = undefined
+aggregate d p (Counter e) = counter (d p) (aggregate d (invert p) e)
+aggregate d p (And es) = undefined -- map (aggregate d p) es
 aggregate d p (Or es) = undefined
 
 cutsets :: Event a -> [Event a]
-cutsets (Basic n p) = [Basic n p]
+cutsets (Basic n a) = [Basic n a]
 cutsets (Comment n e) = map (Comment n) (cutsets e)
 cutsets (Counter e) = map Counter (cutsets e)
 cutsets (And es) = map And (mapM cutsets es) -- cartesian product
 cutsets (Or es) = concatMap cutsets es
+
+-- EXAMPLES
+
+probability :: (a -> Rational) -> ADDomain a Rational
+probability f _ = MkDomain
+    { get     = f
+    , neutral = 0
+    , or      = (+)
+    , and     = (*)
+    , counter = (1 -)
+    }
+
+data Difficulty = L | M | H
+
+min :: Difficulty -> Difficulty -> Difficulty
+min L _ = L
+min _ L = L
+min M _ = M
+min _ M = M
+min _ _ = H
+
+invertDifficulty :: Difficulty -> Difficulty
+invertDifficulty L = H
+invertDifficulty M = M
+invertDifficulty H = L
+
+max :: Difficulty -> Difficulty -> Difficulty
+max a b = min (invertDifficulty a) (invertDifficulty b)
+
+difficulty :: (a -> Difficulty) -> ADDomain a Difficulty
+difficulty f Proponent = MkDomain
+    { get     = f
+    , neutral = H
+    , or      = min
+    , and     = max
+    , counter = invertDifficulty
+    }
+difficulty f Opponent = MkDomain
+    { get     = f
+    , neutral = L
+    , or      = max
+    , and     = min
+    , counter = invertDifficulty
+    }
+
+-- TODO: Cost
 
 example :: Event Rational
 example = Comment "Enemy forges package" (Or [ 
