@@ -13,11 +13,12 @@ invert Opponent = Proponent
 
 -- Domain for a given faction
 data Domain a b = MkDomain
-    { get     :: a -> b
-    , neutral :: b
-    , or      :: b -> b -> b
-    , and     :: b -> b -> b
-    , counter :: b -> b
+    { get        :: a -> b
+    , or         :: b -> b -> b
+    , orNeutral  :: b
+    , and        :: b -> b -> b
+    , andNeutral :: b
+    , counter    :: b -> b
     }
 
 -- Attack-defense domains
@@ -35,8 +36,8 @@ aggregate :: ADDomain a b -> Faction -> Event a -> b
 aggregate d p (Basic _ a) = get (d p) a
 aggregate d p (Comment _ e) = aggregate d p e
 aggregate d p (Counter e) = counter (d p) (aggregate d (invert p) e)
-aggregate d p (And es) = undefined -- map (aggregate d p) es
-aggregate d p (Or es) = undefined
+aggregate d p (And es) = foldr (and (d p) . aggregate d p) (andNeutral $ d p) es
+aggregate d p (Or es) = foldr (or (d p) . aggregate d p) (orNeutral $ d p) es
 
 cutsets :: Event a -> [Event a]
 cutsets (Basic n a) = [Basic n a]
@@ -49,11 +50,12 @@ cutsets (Or es) = concatMap cutsets es
 
 probability :: (a -> Rational) -> ADDomain a Rational
 probability f _ = MkDomain
-    { get     = f
-    , neutral = 0
-    , or      = (+)
-    , and     = (*)
-    , counter = (1 -)
+    { get        = f
+    , or         = (+)
+    , orNeutral  = 0
+    , and        = (*)
+    , andNeutral = 1
+    , counter    = (1 -)
     }
 
 data Difficulty = L | M | H
@@ -75,18 +77,20 @@ max a b = min (invertDifficulty a) (invertDifficulty b)
 
 difficulty :: (a -> Difficulty) -> ADDomain a Difficulty
 difficulty f Proponent = MkDomain
-    { get     = f
-    , neutral = H
-    , or      = min
-    , and     = max
-    , counter = invertDifficulty
+    { get        = f
+    , or         = min
+    , orNeutral  = H
+    , and        = max
+    , andNeutral = L
+    , counter    = invertDifficulty
     }
 difficulty f Opponent = MkDomain
-    { get     = f
-    , neutral = L
-    , or      = max
-    , and     = min
-    , counter = invertDifficulty
+    { get        = f
+    , or         = max
+    , orNeutral  = L
+    , and        = min
+    , andNeutral = H
+    , counter    = invertDifficulty
     }
 
 -- TODO: Cost
