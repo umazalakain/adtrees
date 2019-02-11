@@ -78,28 +78,25 @@ and CAs are strongly encouraged
 to use the Cyber Assessment Framework
 \footnote{\url{https://www.ncsc.gov.uk/guidance/nis-directive-cyber-assessment-framework}}
 to evaluate the OES' compliance to them. Depending on the sector, a CA may issue
-more specific guidance -- an example is the guidance for Cyber Security for
+more specific guidance. One such example is the guidance for Cyber Security for
 Industrial Automation and Control Systems
 \footnote{\url{http://www.hse.gov.uk/foi/internalops/og/og-0086.pdf}} issued by
 the Health and Safety Executive.
 
 \section{Contributions}
 
-In this report 
-
-% https://www.ofcom.org.uk/phones-telecoms-and-internet/information-for-industry/guidance-network-information-systems-regulations
-% Digital infrastructure - TLD
-% Ofcom CA
-% Top level domain .uk
-% Nominet
-% https://www.ncsc.gov.uk/information/active-cyber-defence-one-year
-
-% How attack defense trees help
-% What this tools offer
-% How we showcase an example
+In this report I present an embedded domain specific language
+\footnote{\url{https://en.wikipedia.org/wiki/Domain-specific_language}} for
+modelling attack-defense trees \cite{Kordy} and performing quantitative analysis
+and decision making on them. I then demonstrate how it helps a CA like Ofcom
+(designated regulator for the digital infrastructure subsector) guide and assess
+an OES like Nominet \footnote{\url{https://nominet.uk}} (provider of the
+top-level domain \texttt{.uk}) comply with the NIS directive by following the
+guidance layed out by the Cyber Assessment Framework.
 
 \chapter{Tool}
 
+% How attack defense trees help
 % Fault trees are for safety (must be independent)
 % Security: attack defense trees
 % Every node is an action of the attacker or the defender
@@ -108,13 +105,16 @@ In this report
 % DAGS, necesarry for dependencies and probabilistic viewpoints
 
 \cite{Kordy2013a}
-\cite{Kordy}
 
 \chapter{Evaluation}
 
 % Showcase the tool with an example
 % Underline how it helps implementing NIS
 % We need to conduct some kind of experiment
+
+% https://www.ofcom.org.uk/phones-telecoms-and-internet/information-for-industry/guidance-network-information-systems-regulations
+% https://www.ncsc.gov.uk/information/active-cyber-defence-one-year
+% https://www.theregister.co.uk/2017/08/17/uks_internet_operator_nominet_goes_dark/
 
 \chapter{Results}
 
