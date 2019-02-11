@@ -1,12 +1,12 @@
 TMP=tmp
+FLAGS=-shell-escape
 
 report.pdf: report.tex bibliography.bib
 	mkdir -p $(TMP)
-	pdflatex -output-directory $(TMP) report.tex
-	cp bibliography.bib $(TMP) && cd $(TMP) && bibtex report.aux
-	pdflatex -output-directory $(TMP) report.tex
-	pdflatex -output-directory $(TMP) report.tex
+	cp report.tex bibliography.bib $(TMP)
+	cd $(TMP); pdflatex $(FLAGS) report.tex; bibtex report.aux; pdflatex $(FLAGS) report.tex; pdflatex $(FLAGS) report.tex
 	mv $(TMP)/report.pdf .
 
 clean:
 	rm -r $(TMP)
+	rm report.pdf

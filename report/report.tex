@@ -43,6 +43,10 @@
 % Math symbols
 \usepackage{amssymb}
 
+% Haskell code highlighting
+\usepackage{minted}
+\newenvironment{code}{\VerbatimEnvironment\begin{minted}{haskell}}{\end{minted}}
+
 \begin{document}
 
 \title{Supporting Competent Authorities in the Implementation of the NIS
@@ -95,6 +99,11 @@ top-level domain \texttt{.uk}) comply with the NIS directive by following the
 guidance layed out by the Cyber Assessment Framework.
 
 \chapter{Tool}
+
+\begin{code}
+    foo : Int
+    foo = 1
+\end{code}
 
 % How attack defense trees help
 % Fault trees are for safety (must be independent)
