@@ -40,9 +40,6 @@
 \usepackage[yyyymmdd]{datetime}
 \renewcommand{\dateseparator}{--}
 
-% Inference rules
-\usepackage{mathpartir}
-
 % Math symbols
 \usepackage{amssymb}
 
@@ -65,20 +62,59 @@ Directive for Safety-Critical Industries}
 
 \chapter{Introduction}
 
-% Short explanation of where the NIS directive comes from
-% Summary of the requirements of NIS
+The EU directive on the security of Networks and Information Systems (NIS) has
+been integrated into UK law. This directive aims to improve the reliability and
+security of those network and information systems that are essential to the
+economy, society and individual's welfare.
+\footnote{\url{https://www.ncsc.gov.uk/guidance/introduction-nis-directive}}
+
+The NIS directive does not require Operators of Essential Services (OES) to
+conform to a particular set of fixed rules. Instead, it hands the responsibility
+of oversight to the Competent Authorities (CAs). The NIS postulates 14 general
+principles
+\footnote{\url{https://www.ncsc.gov.uk/guidance/table-view-principles-and-related-guidance}}
+and CAs are strongly encouraged
+\footnote{\url{https://www.gov.uk/government/publications/nis-regulations-guidance-for-competent-authorities}}
+to use the Cyber Assessment Framework
+\footnote{\url{https://www.ncsc.gov.uk/guidance/nis-directive-cyber-assessment-framework}}
+to evaluate the OES' compliance to them. Depending on the sector, a CA may issue
+more specific guidance -- an example is the guidance for Cyber Security for
+Industrial Automation and Control Systems
+\footnote{\url{http://www.hse.gov.uk/foi/internalops/og/og-0086.pdf}} issued by
+the Health and Safety Executive.
+
+\section{Contributions}
+
+In this report 
+
+% https://www.ofcom.org.uk/phones-telecoms-and-internet/information-for-industry/guidance-network-information-systems-regulations
+% Digital infrastructure - TLD
+% Ofcom CA
+% Top level domain .uk
+% Nominet
+% https://www.ncsc.gov.uk/information/active-cyber-defence-one-year
+
+% How attack defense trees help
+% What this tools offer
+% How we showcase an example
 
 \chapter{Tool}
 
-% Highlight fault tree requirements (independence)
-% Security:
-%   Operations, how to model
-% TODO: DAGS, necesarry for dependencies and probabilistic viewpoints
+% Fault trees are for safety (must be independent)
+% Security: attack defense trees
+% Every node is an action of the attacker or the defender
+% Nodes must be independent
+% Diamond shapes can be reformulated
+% DAGS, necesarry for dependencies and probabilistic viewpoints
 
 \cite{Kordy2013a}
 \cite{Kordy}
 
 \chapter{Evaluation}
+
+% Showcase the tool with an example
+% Underline how it helps implementing NIS
+% We need to conduct some kind of experiment
 
 \chapter{Results}
 
@@ -91,6 +127,12 @@ Directive for Safety-Critical Industries}
 \begin{appendices}
 % Only display section titles in the TOC
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}} 
+
+\section{Source code}
+% Where to obtain it
+% How to install it
+% A listing
+
 \end{appendices}
 
 \end{document}
