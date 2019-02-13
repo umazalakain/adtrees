@@ -11,22 +11,17 @@ type Name = String
 
 data Player = A | D deriving (Show, Eq)
 
-invert :: Player -> Player
-invert A = D
-invert D = A
-
 -- Semantics for a given faction
-data FSemantics a b = MkFSemantics
-    { get   :: a -> b
-    , plus  :: b -> b -> b
-    , zero  :: b
-    , times :: b -> b -> b
-    , one   :: b
-    , minus :: b -> b
+data FSemantics a = MkFSemantics
+    { plus  :: a -> a -> a
+    , zero  :: a
+    , times :: a -> a -> a
+    , one   :: a
+    , minus :: a -> a
     }
 
 -- Attack-defense semantics
-type Semantics a b = Player -> FSemantics a b
+type Semantics a = Player -> FSemantics a
 
 data Event a 
     = Basic Player Name a
@@ -35,8 +30,8 @@ data Event a
     deriving (Show, Eq)
 
 -- TODO: add minus
-aggregate :: Semantics a b -> Event a -> b
-aggregate d (Basic p _ a)   = get (d p) a
+aggregate :: Semantics a -> Event a -> a
+aggregate _ (Basic _ _ a)   = a
 aggregate d (And   p _ es)  = foldr (times (d p) . aggregate d) (one $ d p) es
 aggregate d (Or    p _ es)  = foldr (plus (d p) . aggregate d) (zero $ d p) es
 
@@ -47,14 +42,15 @@ cutsets (And p n es) = map (And p n) (mapM cutsets es) -- cartesian product
 cutsets (Or _ _ es) = concatMap cutsets es
 
 flatten :: Event a -> [Event a]
-flatten e@(Basic _ _ _) = [e]
-flatten e@(And _ _ es)  = e : concatMap flatten es
-flatten e@(Or _ _ es)   = e : concatMap flatten es
+flatten e@Basic{}      = [e]
+flatten e@(And _ _ es) = e : concatMap flatten es
+flatten e@(Or _ _ es)  = e : concatMap flatten es
 
-dot :: Eq a => Event a -> String
-dot r = unlines
+dot :: (Eq a) => (a -> String) -> Event a -> String
+dot fs r = unlines
     [ "digraph {"
     , "\trankdir=BT"
+    , "\tnode [style=\"bold,rounded\"]"
     , unlines $ map node (flatten r)
     , unlines $ map edge (flatten r)
     , "}"
@@ -63,22 +59,28 @@ dot r = unlines
         ids = [ (e', "event_" ++ show i) | (e', i) <- zip (flatten r) [0 :: Int ..] ]
         eventId e = fromJust $ lookup e ids
 
+        color A = "#ff0000"
+        color D = "#00ff00"
+
         -- TODO: add player colors
         -- TODO: add attributes
         -- TODO: add or/and fanciness
-        node e@(Basic p n a) = printf "\t%s [label=\"%s\"]" (eventId e) n
-        node e@(And p n es)  = printf "\t%s [label=\"AND %s\"]" (eventId e) n
-        node e@(Or p n es)   = printf "\t%s [label=\"OR %s\"]" (eventId e) n
+        node e@(Basic p n a) = printf "\t%s [label=<%s <br/> <FONT POINT-SIZE=\"10\">%s</FONT>>,color=\"%s\",shape=box]" (eventId e) n (fs a) (color p)
+        node e@(And p n _)   = printf "\t%s [label=<%s <br/> AND>,color=\"%s\",shape=box]" (eventId e) n (color p)
+        node e@(Or p n _)    = printf "\t%s [label=<%s <br/> OR>,color=\"%s\",shape=box]" (eventId e) n (color p)
 
-        edge e@(Basic p n a) = ""
-        edge e@(And p n es)  = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
-        edge e@(Or p n es)   = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
--- EXAMPLES
+        edge Basic{} = ""
+        edge e@(And _ _ es)  = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
+        edge e@(Or _ _ es)   = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
 
-probability :: (a -> Rational) -> Semantics a Rational
-probability f _ = MkFSemantics
-    { get   = f
-    , plus  = (+)
+
+------------------------
+-- DEFAULT ATTRIBUTES --
+------------------------
+
+probability :: Semantics Rational
+probability _ = MkFSemantics
+    { plus  = (+)
     , zero  = 0
     , times = (*)
     , one   = 1
@@ -102,18 +104,16 @@ invertDifficulty H = L
 max :: Difficulty -> Difficulty -> Difficulty
 max a b = min (invertDifficulty a) (invertDifficulty b)
 
-difficulty :: (a -> Difficulty) -> Semantics a Difficulty
-difficulty f A = MkFSemantics
-    { get   = f
-    , plus  = min
+difficulty :: Semantics Difficulty
+difficulty A = MkFSemantics
+    { plus  = min
     , zero  = H
     , times = max
     , one   = L
     , minus = invertDifficulty
     }
-difficulty f D = MkFSemantics
-    { get   = f
-    , plus  = max
+difficulty D = MkFSemantics
+    { plus  = max
     , zero  = L
     , times = min
     , one   = H
