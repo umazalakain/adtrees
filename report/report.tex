@@ -9,18 +9,9 @@
 % They are all over the place
 \usepackage{todonotes}
 
-% Sub-figures
-\usepackage{subcaption}
-
 % Diagrams
 \usepackage{tikz}
 \usetikzlibrary{arrows,positioning}
-\usepackage{pgfplots}
-\usepgfplotslibrary{groupplots}
-\usepackage{pgfgantt}
-
-% inline arithmetic operations
-\usepackage{fp}
 
 % Appendices
 \usepackage[header,title,titletoc]{appendix}
@@ -130,9 +121,14 @@ quantitative evaluation of ADTs, nodes have to be independent of each other.
 Alternative proposals relying on DAGs exist, but are more complex
 \cite{Kordy2013a}.
 
-\includegraphics[width=\textwidth]{bankaccount}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{bankaccount}
+    \caption{Example attack defense tree. Red nodes represent the attacker's
+    actions, green nodes the defendant's. Basic events contain multiple
+    attributes.}
+\end{figure}
 
-% TODO: figure with an example ADT
 
 % TODO: relate to NIS: CAF points
 %   IMPORTANT: How attack defense trees help
