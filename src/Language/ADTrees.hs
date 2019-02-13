@@ -9,10 +9,8 @@ module Language.ADTrees
     , dot
     , probability
     , difficulty
-    , Difficulty(..)
     ) where
 
-import Prelude hiding (or, and, min, max)
 import Data.List (lookup)
 import Data.Maybe (fromJust)
 import Text.Printf (printf)
@@ -99,37 +97,20 @@ probability _ = MkFSemantics
     , minus = (1 -)
     }
 
-data Difficulty = L | M | H deriving (Show, Eq)
-
-min :: Difficulty -> Difficulty -> Difficulty
-min L _ = L
-min _ L = L
-min M _ = M
-min _ M = M
-min _ _ = H
-
-invertDifficulty :: Difficulty -> Difficulty
-invertDifficulty L = H
-invertDifficulty M = M
-invertDifficulty H = L
-
-max :: Difficulty -> Difficulty -> Difficulty
-max a b = min (invertDifficulty a) (invertDifficulty b)
-
-difficulty :: Semantics Difficulty
+difficulty :: Semantics Rational
 difficulty A = MkFSemantics
     { plus  = min
-    , zero  = H
+    , zero  = 1
     , times = max
-    , one   = L
-    , minus = invertDifficulty
+    , one   = 0
+    , minus = (1 -)
     }
 difficulty D = MkFSemantics
     { plus  = max
-    , zero  = L
+    , zero  = 0
     , times = min
-    , one   = H
-    , minus = invertDifficulty
+    , one   = 1
+    , minus = (1 -)
     }
 
 -- TODO: Cost
