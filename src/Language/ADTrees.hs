@@ -1,6 +1,9 @@
 module Language.ADTrees where
 
 import Prelude hiding (or, and, min, max)
+import Data.List (lookup)
+import Data.Maybe (fromJust)
+import Text.Printf (printf)
 
 -- TODO: mention https://github.com/tomahawkins/fault-tree
 
@@ -41,8 +44,35 @@ aggregate d (Or    p _ es)  = foldr (plus (d p) . aggregate d) (zero $ d p) es
 cutsets :: Event a -> [Event a]
 cutsets (Basic p n a) = [Basic p n a]
 cutsets (And p n es) = map (And p n) (mapM cutsets es) -- cartesian product
-cutsets (Or p n es) = concatMap cutsets es
+cutsets (Or _ _ es) = concatMap cutsets es
 
+flatten :: Event a -> [Event a]
+flatten e@(Basic _ _ _) = [e]
+flatten e@(And _ _ es)  = e : concatMap flatten es
+flatten e@(Or _ _ es)   = e : concatMap flatten es
+
+dot :: Eq a => Event a -> String
+dot r = unlines
+    [ "digraph {"
+    , "\trankdir=BT"
+    , unlines $ map node (flatten r)
+    , unlines $ map edge (flatten r)
+    , "}"
+    ]
+    where
+        ids = [ (e', "event_" ++ show i) | (e', i) <- zip (flatten r) [0 :: Int ..] ]
+        eventId e = fromJust $ lookup e ids
+
+        -- TODO: add player colors
+        -- TODO: add attributes
+        -- TODO: add or/and fanciness
+        node e@(Basic p n a) = printf "\t%s [label=\"%s\"]" (eventId e) n
+        node e@(And p n es)  = printf "\t%s [label=\"AND %s\"]" (eventId e) n
+        node e@(Or p n es)   = printf "\t%s [label=\"OR %s\"]" (eventId e) n
+
+        edge e@(Basic p n a) = ""
+        edge e@(And p n es)  = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
+        edge e@(Or p n es)   = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
 -- EXAMPLES
 
 probability :: (a -> Rational) -> Semantics a Rational
@@ -95,7 +125,7 @@ difficulty f D = MkFSemantics
 data ExampleAttribute = MEA
     { getProbability :: Rational
     , getDifficulty  :: Difficulty
-    }
+    } deriving (Show, Eq)
 
 example :: Event ExampleAttribute
 example = Or A "Bank Account" [
