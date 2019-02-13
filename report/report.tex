@@ -83,18 +83,50 @@ the Health and Safety Executive.
 
 \section{Contributions}
 
-In this report I present an embedded domain specific language
-\footnote{\url{https://en.wikipedia.org/wiki/Domain-specific_language}} for
-modelling attack-defense trees \cite{Kordy} and performing quantitative analysis
-and decision making on them. I then demonstrate how it helps a CA like Ofcom
-(designated regulator for the digital infrastructure subsector) guide and assess
-that an OES like Nominet \footnote{\url{https://nominet.uk}} (provider of the
-top-level domain \texttt{.uk}) complies with the NIS directive by following the
-guidance laid out by the Cyber Assessment Framework.
+In this report I present a Haskell library capable of \textbf{modelling},
+\textbf{rendering}, and \textbf{performing quantitative analysis} on attack
+defense trees.
 
-\todo{Which of the 12 points are we covering}
+To demonstrate how a CA might use this tool to guide an asses an OES, I perform
+a case analysis on the provision of the top-level domain \texttt{.uk} by Nominet
+\footnote{\url{https://nominet.uk}}, where Ofcom is the competent authority as
+designated regulator for digital infrastructure.
 
-\chapter{An eDSL for attack defense trees}
+Concretely, the library allows for the evaluation of the following points of the
+Cyber Assessment Framework:
+
+% TODO: revise these are met in evaluation
+\begin{description}
+    \item [A2a]
+        \begin{itemize}
+            \item Your organisational process ensures that security risks to
+                networks and information systems relevant to essential services
+                are identified, analysed, prioritised, and managed.
+            \item Your approach to risk is focused on the possibility of
+                disruption to your essential service, leading to a detailed
+                understanding of how such disruption might arise as a
+                consequence of possible attacker actions and the security
+                properties of your networks and information systems.
+            \item The output from your risk management process is a clear set of
+                security requirements that will address the risks in line with
+                your organisational approach to security.
+        \end{itemize}
+
+    \item [B1a]
+        \begin{itemize}
+            \item Your systems are designed so that they remain secure even when
+                user security policies and processes are not always followed.
+        \end{itemize}
+
+    \item [D1a]
+        \begin{itemize}
+            \item Your incident response plan is based on a clear understanding
+                of the security risks to the networks and information systems
+                supporting your essential service .
+        \end{itemize}
+\end{description}
+
+\chapter{A Haskell library for attack defense trees}
 
 \section{Attack defense trees}
 
@@ -103,7 +135,7 @@ the way in which basic events interact to lead to an undesired event
 \cite[IV.1]{Vesely1981}. They are a tree of nodes and leafs, where each node is
 a logical gate and each leaf a basic event. This structure makes fault trees
 attractive for quantitative evaluation. It is important to note that all basic
-events in a fault tree \textbf{must} be unique and independent. Every directed
+events in a fault tree \textit{must} be unique and independent. Every directed
 acyclic graph representing a fault model can be rewritten as a fault tree.
 \todo{citation needed}
 
