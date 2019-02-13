@@ -74,14 +74,14 @@ economy, society and individual's welfare.
 
 The NIS directive does not require Operators of Essential Services (OES) to
 conform to a particular set of fixed rules. Instead, it hands the responsibility
-of oversight to the Competent Authorities (CAs). The NIS postulates 14 general
-principles
+of oversight to the Competent Authorities (CAs). The NIS directive postulates 14
+general principles
 \footnote{\url{https://www.ncsc.gov.uk/guidance/table-view-principles-and-related-guidance}}
 and CAs are strongly encouraged
 \footnote{\url{https://www.gov.uk/government/publications/nis-regulations-guidance-for-competent-authorities}}
 to use the Cyber Assessment Framework
 \footnote{\url{https://www.ncsc.gov.uk/guidance/nis-directive-cyber-assessment-framework}}
-to evaluate the OES' compliance to them. Depending on the sector, a CA may issue
+to evaluate whether OES follow them. Depending on the sector, a CA may issue
 more specific guidance. One such example is the guidance for Cyber Security for
 Industrial Automation and Control Systems
 \footnote{\url{http://www.hse.gov.uk/foi/internalops/og/og-0086.pdf}} issued by
@@ -94,26 +94,56 @@ In this report I present an embedded domain specific language
 modelling attack-defense trees \cite{Kordy} and performing quantitative analysis
 and decision making on them. I then demonstrate how it helps a CA like Ofcom
 (designated regulator for the digital infrastructure subsector) guide and assess
-an OES like Nominet \footnote{\url{https://nominet.uk}} (provider of the
-top-level domain \texttt{.uk}) comply with the NIS directive by following the
-guidance layed out by the Cyber Assessment Framework.
+that an OES like Nominet \footnote{\url{https://nominet.uk}} (provider of the
+top-level domain \texttt{.uk}) complies with the NIS directive by following the
+guidance laid out by the Cyber Assessment Framework.
 
-\chapter{Tool}
+\todo{Which of the 12 points are we covering}
 
-\begin{code}
-    foo : Int
-    foo = 1
-\end{code}
+\chapter{An eDSL for attack defense trees}
 
-% How attack defense trees help
-% Fault trees are for safety (must be independent)
-% Security: attack defense trees
-% Every node is an action of the attacker or the defender
-% Nodes must be independent
-% Diamond shapes can be reformulated
-% DAGS, necesarry for dependencies and probabilistic viewpoints
+\section{Attack defense trees}
 
-\cite{Kordy2013a}
+Fault trees were first introduced as a graphical and logical tool for modelling
+the way in which basic events interact to lead to an undesired event
+\cite[IV.1]{Vesely1981}. They are a tree of nodes and leafs, where each node is
+a logical gate and each leaf a basic event. This structure makes fault trees
+attractive for quantitative evaluation. It is important to note that all basic
+events in a fault tree \textbf{must} be unique and independent. Every directed
+acyclic graph representing a fault model can be rewritten as a fault tree.
+\todo{citation needed}
+
+Attack trees take the idea of fault trees and adapt it to model attack scenarios
+in security-critical systems \cite{Schneier1999} \cite{Brooke2003}
+\cite{NaiFovino2009}: an attacker's objective (at the root of the tree) is
+repeatedly refined into subgoals connected by logical gates -- it is unable to
+represent any defensive measure.
+
+Attack defense trees (ADTs) extend attack trees by allowing nodes to represent
+defensive measures \cite{Kordy}. Every node is thus an action of either the
+attacker or the defender: interactive scenarios can be represented. As with
+fault trees, refinements can either be disjunctive or conjunctive. To allow a
+quantitative evaluation of ADTs, nodes have to be independent of each other.
+Alternative proposals relying on DAGs exist, but are more complex
+\cite{Kordy2013a}.
+
+% TODO: figure with an example ADT
+
+% TODO: relate to NIS: CAF points
+%   IMPORTANT: How attack defense trees help
+
+\section{Requirements}
+
+% Simple modelling
+
+% Generalised attributes
+\cite{Kordy2012}
+%   Generalised algebra on attributes
+%   Quantitative analysis
+
+% Tree to graph
+
+\section{Implementation}
 
 \chapter{Evaluation}
 
@@ -129,7 +159,7 @@ guidance layed out by the Cyber Assessment Framework.
 
 \chapter{Conclusions}
 
-\bibliographystyle{ieeetr}
+\bibliographystyle{apalike}
 \bibliography{bibliography}
 
 \newpage
@@ -137,7 +167,7 @@ guidance layed out by the Cyber Assessment Framework.
 % Only display section titles in the TOC
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}} 
 
-\section{Source code}
+\chapter{Source code}
 % Where to obtain it
 % How to install it
 % A listing
