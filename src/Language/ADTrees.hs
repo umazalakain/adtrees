@@ -1,4 +1,16 @@
-module Language.ADTrees where
+module Language.ADTrees
+    ( Player(..)
+    , Event(..)
+    , Semantics
+    , FSemantics(..)
+    , aggregate
+    , cutsets
+    , flatten
+    , dot
+    , probability
+    , difficulty
+    , Difficulty(..)
+    ) where
 
 import Prelude hiding (or, and, min, max)
 import Data.List (lookup)
@@ -121,29 +133,3 @@ difficulty D = MkFSemantics
     }
 
 -- TODO: Cost
-
-data ExampleAttribute = MEA
-    { getProbability :: Rational
-    , getDifficulty  :: Difficulty
-    } deriving (Show, Eq)
-
-example :: Event ExampleAttribute
-example = Or A "Bank Account" [
-    And A "ATM" [
-        Or A "PIN" [
-            Basic A "Eavesdrop" $ MEA 0.01 L,
-            And A "Find Note" [
-                Basic D "Memorize" $ MEA 0.80 L],
-            Basic A "Force" $ MEA 0.01 H],
-        Basic A "Card" $ MEA 0.1 H],
-    And A "Online" [
-        Or A "Password" [
-            Basic A "Phishing" $ MEA 0.90 L,
-            Basic A "Key logger" $ MEA 0.20 M],
-        Basic A "User name" $ MEA 0.90 L,
-        Or D "2nd Auth Factor" [
-            Basic D "Key Fobs" $ MEA 0.01 L,
-            Basic D "PIN Pad" $ MEA 0.01 L,
-            Or A "Malware" [
-                Basic A "Browser" $ MEA 0.20 M,
-                Basic A "OS" $ MEA 0.20 M]]]]

@@ -47,6 +47,9 @@
 \usepackage{minted}
 \newenvironment{code}{\VerbatimEnvironment\begin{minted}{haskell}}{\end{minted}}
 
+% Include images
+\usepackage{graphics}
+
 \begin{document}
 
 \title{Supporting Competent Authorities in the Implementation of the NIS
@@ -126,6 +129,8 @@ fault trees, refinements can either be disjunctive or conjunctive. To allow a
 quantitative evaluation of ADTs, nodes have to be independent of each other.
 Alternative proposals relying on DAGs exist, but are more complex
 \cite{Kordy2013a}.
+
+\includegraphics[width=\textwidth]{bankaccount}
 
 % TODO: figure with an example ADT
 
