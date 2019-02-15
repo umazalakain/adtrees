@@ -148,6 +148,7 @@ other -- alternative proposals relying on DAGs exist, but are more complex
 \cite{Kordy2013a}.
 
 \begin{figure}[h]
+    \label{example-adt}
     \centering
     \includegraphics[width=\textwidth]{bankaccount}
     \caption{Example attack defense tree. Red nodes represent the attacker's
@@ -171,6 +172,36 @@ other -- alternative proposals relying on DAGs exist, but are more complex
 % Tree to graph
 
 \section{Implementation}
+
+Each node can be of type \texttt{Or}, \texttt{And} or \texttt{Basic}. Every node
+has an associated player (\texttt{A} for attacker; \texttt{D} for defender) and
+text. \texttt{Or} and \texttt{And} nodes contain subtrees, while \texttt{Basic}
+nodes contain attribute data. \todo{colors}
+
+\begin{figure}[h]
+    \begin{code}
+        Or A "Bank Account" [
+            And A "ATM" [
+                Or A "PIN" [
+                    Basic A "Eavesdrop" (0.01, 0),
+                    And A "Find Note" [
+                        Basic D "Memorize" (0.80, 0)],
+                    Basic A "Force" (0.01, 1)],
+                Basic A "Card" (0.1, 1)],
+            And A "Online" [
+                Or A "Password" [
+                    Basic A "Phishing" (0.90, 0),
+                    Basic A "Key logger" (0.20, 0.5)],
+                Basic A "User name" (0.90, 0),
+                Or D "2nd Auth Factor" [
+                    Basic D "Key Fobs" (0.01, 0),
+                    Basic D "PIN Pad" (0.01, 0),
+                    Or A "Malware" [
+                        Basic A "Browser" (0.20, 0.5),
+                        Basic A "OS" (0.20, 0.5)]]]]
+    \end{code}
+    \caption{Representation of the example ADT tree in Figure \ref{example-adt}}
+\end{figure}
 
 \chapter{Evaluation}
 
