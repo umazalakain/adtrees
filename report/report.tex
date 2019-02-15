@@ -68,10 +68,10 @@ economy, society and individual's welfare.
 
 The NIS directive does not require Operators of Essential Services (OES) to
 conform to a particular set of fixed rules. Instead, it hands the responsibility
-of oversight to the Competent Authorities (CAs). The NIS directive postulates 14
-general principles
+of oversight to the relevant Competent Authority (CA). The NIS directive
+postulates 14 general principles
 \footnote{\url{https://www.ncsc.gov.uk/guidance/table-view-principles-and-related-guidance}}
-and CAs are strongly encouraged
+-- CAs are strongly encouraged
 \footnote{\url{https://www.gov.uk/government/publications/nis-regulations-guidance-for-competent-authorities}}
 to use the Cyber Assessment Framework
 \footnote{\url{https://www.ncsc.gov.uk/guidance/nis-directive-cyber-assessment-framework}}
@@ -87,12 +87,12 @@ In this report I present a Haskell library capable of \textbf{modelling},
 \textbf{rendering}, and \textbf{performing quantitative analysis} on attack
 defense trees.
 
-To demonstrate how a CA might use this tool to guide an asses an OES, I perform
-a case analysis on the provision of the top-level domain \texttt{.uk} by Nominet
-\footnote{\url{https://nominet.uk}}, where Ofcom is the competent authority as
-designated regulator for digital infrastructure.
+I then demonstrate how a CA might use this tool to guide an asses an OES, I
+perform a case analysis on the provision of the top-level domain \texttt{.uk} by
+Nominet \footnote{\url{https://nominet.uk}}, where Ofcom is the competent
+juthority as the designated regulator for digital infrastructure.
 
-Concretely, the library allows for the evaluation of the following points of the
+Concretely, the library eases the evaluation of the following points of the
 Cyber Assessment Framework:
 
 % TODO: revise these are met in evaluation
@@ -117,13 +117,6 @@ Cyber Assessment Framework:
             \item Your systems are designed so that they remain secure even when
                 user security policies and processes are not always followed.
         \end{itemize}
-
-    \item [D1a]
-        \begin{itemize}
-            \item Your incident response plan is based on a clear understanding
-                of the security risks to the networks and information systems
-                supporting your essential service .
-        \end{itemize}
 \end{description}
 
 \chapter{A Haskell library for attack defense trees}
@@ -131,26 +124,27 @@ Cyber Assessment Framework:
 \section{Attack defense trees}
 
 Fault trees were first introduced as a graphical and logical tool for modelling
-the way in which basic events interact to lead to an undesired event
-\cite[IV.1]{Vesely1981}. They are a tree of nodes and leafs, where each node is
-a logical gate and each leaf a basic event. This structure makes fault trees
-attractive for quantitative evaluation. It is important to note that all basic
-events in a fault tree \textit{must} be unique and independent. Every directed
-acyclic graph representing a fault model can be rewritten as a fault tree.
-\todo{citation needed}
+the way in which basic events interact to lead to an undesired behaviour
+\cite[IV.1]{Vesely1981}. They are therefore useful in safety-critical systems.
+They consist of nodes and leafs: each node is a logical gate; each leaf a basic
+event. This structure makes fault trees attractive for quantitative evaluation.
+It is important to note that all basic events in a fault tree \textit{must} be
+unique and independent. If not the case, every directed acyclic graph
+representing a fault model can be rewritten as a fault tree.  \todo{citation
+needed}
 
 Attack trees take the idea of fault trees and adapt it to model attack scenarios
 in security-critical systems \cite{Schneier1999} \cite{Brooke2003}
 \cite{NaiFovino2009}: an attacker's objective (at the root of the tree) is
-repeatedly refined into subgoals connected by logical gates -- it is unable to
-represent any defensive measure.
+repeatedly refined into subgoals connected by logical gates. Yet, this model is
+unable to represent any defensive measure.
 
-Attack defense trees (ADTs) extend attack trees by allowing nodes to represent
-defensive measures \cite{Kordy}. Every node is thus an action of either the
-attacker or the defender: interactive scenarios can be represented. As with
-fault trees, refinements can either be disjunctive or conjunctive. To allow a
-quantitative evaluation of ADTs, nodes have to be independent of each other.
-Alternative proposals relying on DAGs exist, but are more complex
+Attack defense trees (ADTs) extend attack trees by introducing nodes that
+represent defensive measures \cite{Kordy}. Every node is thus an action of
+either the attacker or the defender: interactive scenarios can be represented.
+As with fault trees, refinements can either be disjunctive or conjunctive. To
+allow a quantitative evaluation of ADTs, nodes have to be independent of each
+other -- alternative proposals relying on DAGs exist, but are more complex
 \cite{Kordy2013a}.
 
 \begin{figure}[h]
@@ -158,7 +152,7 @@ Alternative proposals relying on DAGs exist, but are more complex
     \includegraphics[width=\textwidth]{bankaccount}
     \caption{Example attack defense tree. Red nodes represent the attacker's
     actions, green nodes the defendant's. Basic events contain multiple
-    attributes.}
+    attributes for quantitative analysis.}
 \end{figure}
 
 
