@@ -13,22 +13,22 @@ example =
     Or A "Bank Account" [
         And A "ATM" [
             Or A "PIN" [
-                Basic A "Eavesdrop" (0.01, 0),
+                Basic A "Eavesdrop" (0.01, 0.3),
                 And A "Find Note" [
-                    Basic D "Memorize" (0.80, 0)],
-                Basic A "Force" (0.01, 1)],
-            Basic A "Card" (0.1, 1)],
+                    Basic D "Memorize" (0.80, 0.1)],
+                Basic A "Force" (0.01, 0.9)],
+            Basic A "Card" (0.1, 0.7)],
         And A "Online" [
             Or A "Password" [
-                Basic A "Phishing" (0.90, 0),
-                Basic A "Key logger" (0.20, 0.5)],
-            Basic A "User name" (0.90, 0),
+                Basic A "Phishing" (0.90, 0.4),
+                Basic A "Key logger" (0.20, 0.6)],
+            Basic A "User name" (0.90, 0.1),
             Or D "2nd Auth Factor" [
-                Basic D "Key Fobs" (0.01, 0),
-                Basic D "PIN Pad" (0.01, 0),
+                Basic D "Key Fobs" (0.01, 0.1),
+                Basic D "PIN Pad" (0.01, 0.3),
                 Or A "Malware" [
                     Basic A "Browser" (0.20, 0.5),
-                    Basic A "OS" (0.20, 0.5)]]]]
+                    Basic A "OS" (0.20, 0.4)]]]]
 
 main :: IO ()
 main = do args <- getArgs
