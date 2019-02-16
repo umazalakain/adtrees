@@ -69,34 +69,34 @@ Directive for Safety-Critical Industries}
 The EU directive on the security of Networks and Information Systems (NIS) has
 been integrated into UK law. This directive aims to improve the reliability and
 security of those network and information systems that are essential to the
-economy, society and individual's welfare.
-\footnote{\url{https://www.ncsc.gov.uk/guidance/introduction-nis-directive}}
+economy, society and individual's
+welfare.\footnote{\url{https://www.ncsc.gov.uk/guidance/introduction-nis-directive}}
 
 The NIS directive does not require Operators of Essential Services (OES) to
 conform to a particular set of fixed rules. Instead, it hands the responsibility
 of oversight to the relevant Competent Authority (CA). The NIS directive
-postulates 14 general principles
-\footnote{\url{https://www.ncsc.gov.uk/guidance/table-view-principles-and-related-guidance}}
--- CAs are strongly encouraged
-\footnote{\url{https://www.gov.uk/government/publications/nis-regulations-guidance-for-competent-authorities}}
-to use the Cyber Assessment Framework
-\footnote{\url{https://www.ncsc.gov.uk/guidance/nis-directive-cyber-assessment-framework}}
+postulates 14 general
+principles\footnote{\url{https://www.ncsc.gov.uk/guidance/table-view-principles-and-related-guidance}}
+-- CAs are strongly
+encouraged\footnote{\url{https://www.gov.uk/government/publications/nis-regulations-guidance-for-competent-authorities}}
+to use the Cyber Assessment
+Framework\footnote{\url{https://www.ncsc.gov.uk/guidance/nis-directive-cyber-assessment-framework}}
 to evaluate whether OES follow them. Depending on the sector, a CA may issue
 more specific guidance. One such example is the guidance for Cyber Security for
-Industrial Automation and Control Systems
-\footnote{\url{http://www.hse.gov.uk/foi/internalops/og/og-0086.pdf}} issued by
-the Health and Safety Executive.
+Industrial Automation and Control
+Systems\footnote{\url{http://www.hse.gov.uk/foi/internalops/og/og-0086.pdf}}
+issued by the Health and Safety Executive.
 
 \section{Contributions}
 
 In this report I present a Haskell library capable of \textbf{modelling},
-\textbf{rendering}, and \textbf{performing quantitative analysis} on attack
-defense trees.
+\textbf{rendering}, finding \textbf{minimal cutsets} and performing
+\textbf{quantitative analysis} on attack defense trees.
 
-I then demonstrate how a CA might use this tool to guide an asses an OES, I
-perform a case analysis on the provision of the top-level domain \texttt{.uk} by
-Nominet \footnote{\url{https://nominet.uk}}, where Ofcom is the competent
-juthority as the designated regulator for digital infrastructure.
+I then demonstrate how a CA might use this tool to guide an asses an OES by
+performing a case analysis on the provision of the top-level domain \texttt{.uk}
+by Nominet\footnote{\url{https://nominet.uk}} -- where Ofcom is the competent
+authority as the designated regulator for digital infrastructure.
 
 Concretely, the library eases the evaluation of the following points of the
 Cyber Assessment Framework:
