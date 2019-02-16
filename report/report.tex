@@ -41,6 +41,12 @@
 % Include images
 \usepackage{graphics}
 
+% No new page on chapters
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\scr@startchapter}{\if@openright\cleardoublepage\else\clearpage\fi}{}{}{}
+\makeatother
+
 \begin{document}
 
 \title{Supporting Competent Authorities in the Implementation of the NIS
