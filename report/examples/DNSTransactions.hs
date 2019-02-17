@@ -7,29 +7,29 @@ import Language.ADTrees
 
 example :: ADTree ()
 example =
-    Or A "DNS Transactions" [
-        Or A "Query/Response Threats" [
-            Or A "Forged response" [
-                Or A "Compromised server" [
-                    Basic A "OS compromised" (),
-                    Basic A "Communication stack compromised" ()],
-                Or A "Caching server compromised" [
-                    Basic A "Packet interception" (),
-                    Basic A "Query prediction" ()]],
-            Or A "Removal of RRs" [],
-            Or A "Incorrect expansion" []
+    Or "DNS Transactions" [
+        Or "Query/Response Threats" [
+            Or "Forged response" [
+                Or "Compromised server" [
+                    Basic "OS compromised" (),
+                    Basic "Communication stack compromised" ()],
+                Or "Caching server compromised" [
+                    Basic "Packet interception" (),
+                    Basic "Query prediction" ()]],
+            Or "Removal of RRs" [],
+            Or "Incorrect expansion" []
         ],
-        Or A "Zone Transfer Threats" [
-            Or A "Denial of Service" [],
-            Or A "Tampered transfer message" []
+        Or "Zone Transfer Threats" [
+            Or "Denial of Service" [],
+            Or "Tampered transfer message" []
         ],
-        Or A "Dynamic Updates Threats" [
-            Or A "Unauthorized updates" [],
-            Or A "Tampered update request" [],
-            Or A "Replay attacks" []
+        Or "Dynamic Updates Threats" [
+            Or "Unauthorized updates" [],
+            Or "Tampered update request" [],
+            Or "Replay attacks" []
         ],
-        Or A "DNS NOTIFY Threats" [
-            Or A "Spurious NOTIFY" []
+        Or "DNS NOTIFY Threats" [
+            Or "Spurious NOTIFY" []
         ]
     ]
 
@@ -37,7 +37,7 @@ example =
 
 main :: IO ()
 main = do args <- getArgs
-          writeFile (args !! 0) (dot (const " ") example)
+          writeFile (args !! 0) (dot A (const " ") example)
           pid <- runCommand $ printf "dot -Gsize=\"16.52,11.68\" -Gratio=\"fill\"  -Glandscape=false -Gsplines=ortho -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
           waitForProcess pid
           return ()
