@@ -11,27 +11,17 @@ module Language.ADTrees
     , difficulty
     ) where
 
-import Data.List (lookup)
+import Data.List (lookup, partition)
 import Data.Maybe (fromJust)
 import Text.Printf (printf)
 
--- TODO: mention https://github.com/tomahawkins/fault-tree
+-- --------- --
+-- Structure --
+-- --------- --
 
 type Name = String
 
 data Player = A | D deriving (Show, Eq)
-
--- Semantics for a given player
-data PSemantics a = MkPSemantics
-    { plus  :: a -> a -> a
-    , zero  :: a
-    , times :: a -> a -> a
-    , one   :: a
-    , minus :: a -> a
-    }
-
--- Attack-defense semantics
-type Semantics a = Player -> PSemantics a
 
 data ADTree a 
     = Basic Player Name a
@@ -39,21 +29,17 @@ data ADTree a
     | Or    Player Name [ADTree a]
     deriving (Show, Eq)
 
+switchPlayer :: Player -> Player
+switchPlayer A = D
+switchPlayer D = A
+
 getPlayer :: ADTree a -> Player
 getPlayer (Basic p _ _) = p
 getPlayer (And p _ _) = p
 getPlayer (Or p _ _) = p
 
--- TODO: there should be a better way of doing this
-doMinus :: Semantics a -> (Semantics a -> ADTree a -> a) -> Player -> (ADTree a -> a)
-doMinus d agg p e
-  | p == getPlayer e = agg d e
-  | otherwise = minus (d p) (agg d e)
-
-aggregate :: Semantics a -> ADTree a -> a
-aggregate _ (Basic _ _ a)   = a
-aggregate d (And   p _ es)  = foldr (times (d p) . doMinus d aggregate p) (one $ d p) es
-aggregate d (Or    p _ es)  = foldr (plus (d p) . doMinus d aggregate p) (zero $ d p) es
+partitionPlayer :: [ADTree a] -> ([ADTree a], [ADTree a])
+partitionPlayer = partition ((== A) . getPlayer)
 
 -- TODO: check this makes sense
 cutsets :: ADTree a -> [ADTree a]
@@ -65,6 +51,37 @@ flatten :: ADTree a -> [ADTree a]
 flatten e@Basic{}      = [e]
 flatten e@(And _ _ es) = e : concatMap flatten es
 flatten e@(Or _ _ es)  = e : concatMap flatten es
+
+-- ------- --
+-- Algebra --
+-- ------- --
+
+data PSemantics a = MkPSemantics
+    { plus    :: a -> a -> a
+    , zero    :: a
+    , times   :: a -> a -> a
+    , one     :: a
+    , counter :: a -> a -> a
+    }
+
+type Semantics a = Player -> PSemantics a
+
+aggPlus :: Semantics a -> Player -> [ADTree a] -> a
+aggPlus sem p = foldr (plus (sem p) . aggregate sem) (zero $ sem p)
+
+aggTimes :: Semantics a -> Player -> [ADTree a] -> a
+aggTimes sem p = foldr (times (sem p) . aggregate sem) (one $ sem p)
+
+aggregate :: Semantics a -> ADTree a -> a
+aggregate _   (Basic _ _ a) = a
+aggregate sem (Or p _ cs)   = let (as, ds) = partitionPlayer cs
+                               in counter (sem p) (aggPlus sem p as) (aggPlus sem (switchPlayer p) ds)
+aggregate sem (And p _ cs)  = let (as, ds) = partitionPlayer cs
+                               in counter (sem p) (aggTimes sem p as) (aggTimes sem (switchPlayer p) ds)
+
+-- --------- --
+-- Rendering --
+-- --------- --
 
 dot :: (Eq a) => (a -> String) -> ADTree a -> String
 dot fs r = unlines
@@ -94,33 +111,33 @@ dot fs r = unlines
         edge e@(Or _ _ es)   = unlines [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- es ]
 
 
-------------------------
--- DEFAULT ATTRIBUTES --
-------------------------
+-- ---------------- --
+-- Example algebras --
+-- ---------------- --
 
 probability :: Semantics Rational
 probability _ = MkPSemantics
-    { plus  = (+)
-    , zero  = 0
-    , times = (*)
-    , one   = 1
-    , minus = (1 -)
+    { plus    = (+)
+    , zero    = 0
+    , times   = (*)
+    , one     = 1
+    , counter = (-)
     }
 
 difficulty :: Semantics Rational
 difficulty A = MkPSemantics
-    { plus  = min
-    , zero  = 1
-    , times = max
-    , one   = 0
-    , minus = (1 -)
+    { plus    = min
+    , zero    = 1
+    , times   = max
+    , one     = 0
+    , counter = max
     }
 difficulty D = MkPSemantics
-    { plus  = max
-    , zero  = 0
-    , times = min
-    , one   = 1
-    , minus = (1 -)
+    { plus    = max
+    , zero    = 0
+    , times   = min
+    , one     = 1
+    , counter = min
     }
 
 -- TODO: Cost
