@@ -2,7 +2,7 @@ module Language.ADTrees
     ( Player(..)
     , Event(..)
     , Semantics
-    , FSemantics(..)
+    , PSemantics(..)
     , aggregate
     , cutsets
     , flatten
@@ -21,8 +21,8 @@ type Name = String
 
 data Player = A | D deriving (Show, Eq)
 
--- Semantics for a given faction
-data FSemantics a = MkFSemantics
+-- Semantics for a given player
+data PSemantics a = MkPSemantics
     { plus  :: a -> a -> a
     , zero  :: a
     , times :: a -> a -> a
@@ -31,7 +31,7 @@ data FSemantics a = MkFSemantics
     }
 
 -- Attack-defense semantics
-type Semantics a = Player -> FSemantics a
+type Semantics a = Player -> PSemantics a
 
 data Event a 
     = Basic Player Name a
@@ -89,7 +89,7 @@ dot fs r = unlines
 ------------------------
 
 probability :: Semantics Rational
-probability _ = MkFSemantics
+probability _ = MkPSemantics
     { plus  = (+)
     , zero  = 0
     , times = (*)
@@ -98,14 +98,14 @@ probability _ = MkFSemantics
     }
 
 difficulty :: Semantics Rational
-difficulty A = MkFSemantics
+difficulty A = MkPSemantics
     { plus  = min
     , zero  = 1
     , times = max
     , one   = 0
     , minus = (1 -)
     }
-difficulty D = MkFSemantics
+difficulty D = MkPSemantics
     { plus  = max
     , zero  = 0
     , times = min
