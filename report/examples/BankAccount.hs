@@ -8,7 +8,7 @@ import Language.ADTrees
 fsExampleAttribute :: (Rational, Rational) -> String
 fsExampleAttribute (p, d) = printf "probability: %s <br/> difficulty: %s" (show p) (show d)
 
-example :: Event (Rational, Rational)
+example :: ADTree (Rational, Rational)
 example = 
     Or A "Bank Account" [
         And A "ATM" [

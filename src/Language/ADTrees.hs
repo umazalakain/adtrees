@@ -1,6 +1,6 @@
 module Language.ADTrees
     ( Player(..)
-    , Event(..)
+    , ADTree(..)
     , Semantics
     , PSemantics(..)
     , aggregate
@@ -33,30 +33,40 @@ data PSemantics a = MkPSemantics
 -- Attack-defense semantics
 type Semantics a = Player -> PSemantics a
 
-data Event a 
+data ADTree a 
     = Basic Player Name a
-    | And   Player Name [Event a]
-    | Or    Player Name [Event a]
+    | And   Player Name [ADTree a]
+    | Or    Player Name [ADTree a]
     deriving (Show, Eq)
 
--- TODO: add minus
-aggregate :: Semantics a -> Event a -> a
+getPlayer :: ADTree a -> Player
+getPlayer (Basic p _ _) = p
+getPlayer (And p _ _) = p
+getPlayer (Or p _ _) = p
+
+-- TODO: there should be a better way of doing this
+doMinus :: Semantics a -> (Semantics a -> ADTree a -> a) -> Player -> (ADTree a -> a)
+doMinus d agg p e
+  | p == getPlayer e = agg d e
+  | otherwise = minus (d p) (agg d e)
+
+aggregate :: Semantics a -> ADTree a -> a
 aggregate _ (Basic _ _ a)   = a
-aggregate d (And   p _ es)  = foldr (times (d p) . aggregate d) (one $ d p) es
-aggregate d (Or    p _ es)  = foldr (plus (d p) . aggregate d) (zero $ d p) es
+aggregate d (And   p _ es)  = foldr (times (d p) . doMinus d aggregate p) (one $ d p) es
+aggregate d (Or    p _ es)  = foldr (plus (d p) . doMinus d aggregate p) (zero $ d p) es
 
 -- TODO: check this makes sense
-cutsets :: Event a -> [Event a]
+cutsets :: ADTree a -> [ADTree a]
 cutsets (Basic p n a) = [Basic p n a]
 cutsets (And p n es) = map (And p n) (mapM cutsets es) -- cartesian product
 cutsets (Or _ _ es) = concatMap cutsets es
 
-flatten :: Event a -> [Event a]
+flatten :: ADTree a -> [ADTree a]
 flatten e@Basic{}      = [e]
 flatten e@(And _ _ es) = e : concatMap flatten es
 flatten e@(Or _ _ es)  = e : concatMap flatten es
 
-dot :: (Eq a) => (a -> String) -> Event a -> String
+dot :: (Eq a) => (a -> String) -> ADTree a -> String
 dot fs r = unlines
     [ "digraph {"
     , "\trankdir=BT"
@@ -66,7 +76,7 @@ dot fs r = unlines
     , "}"
     ]
     where
-        ids = [ (e', "event_" ++ show i) | (e', i) <- zip (flatten r) [0 :: Int ..] ]
+        ids = [ (e', "ADTree_" ++ show i) | (e', i) <- zip (flatten r) [0 :: Int ..] ]
         eventId e = fromJust $ lookup e ids
 
         color A = "#ff0000"

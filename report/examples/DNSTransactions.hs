@@ -5,7 +5,7 @@ import System.Process (runCommand, waitForProcess)
 import Language.ADTrees
 
 
-example :: Event ()
+example :: ADTree ()
 example =
     Or A "DNS Transactions" [
         Or A "Query/Response Threats" [
@@ -38,6 +38,6 @@ example =
 main :: IO ()
 main = do args <- getArgs
           writeFile (args !! 0) (dot (const " ") example)
-          pid <- runCommand $ printf "dot -Tpng -v %s -o%s" (args !! 0) (args !! 1)
+          pid <- runCommand $ printf "dot -Gsize=\"16.52,11.68\" -Gratio=\"fill\"  -Glandscape=false -Gsplines=ortho -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
           waitForProcess pid
           return ()
