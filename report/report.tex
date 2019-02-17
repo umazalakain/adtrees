@@ -166,7 +166,6 @@ conjunctive. To allow a quantitative evaluation of ADTs, nodes have to be
 independent of each other -- alternative proposals relying on DAGs exist, but
 are more complex \cite{KordyDAG}.
 
-\todo{Clarify algebra meaning OR and AND}
 \todo{More on the technique itself?}
 
 % TODO: relate to NIS: CAF points
@@ -180,7 +179,8 @@ following goals in mind:
 
 \begin{itemize}
     \item To provide a \textbf{small and simple} interface for modelling attack
-        defense trees while remaining \textbf{extendable}.
+        defense trees while remaining \textbf{extendable}. \todo{mention no
+        parser}
     \item To provide a \textbf{flexible} interface to \textbf{quantitative
         analysis} while providing some commonly used algebras.
     \item To \textbf{aid decision making} by generating minimal cutsets of the
@@ -198,18 +198,18 @@ library: this contributes to keeping any superfluous functionality at minimum.
 Trees are represented by an inductive datatype. This datatype is generalised
 over \texttt{a}, which may contain information of arbitrary type that is later
 used for quantitative analysis. The leafs of the tree, represented by the
-constructor \mintinline{Haskell}{Basic} contain this information.  Constructors
-\mintinline{Haskell}{And} and \mintinline{Haskell}{Or} contain a list of
-subtrees. Every type of node has a name and a flag that indicates which player
-it belongs to -- \mintinline{Haskell}{A} for attacker, \mintinline{Haskell}{D}
-for defender.
+constructor \mintinline{Haskell}{Basic} contain this information. Constructors
+\mintinline{Haskell}{And} and \mintinline{Haskell}{Or} represent logical gates
+containing a list of subtrees. The constructor \mintinline{Haskell}{Counter}
+represents a countermeasure: its left subtree contains actions by the same
+player; its right subtree contains actions by its opponent.
 
 \begin{code}
-data Player = A | D
 data ADTree a 
-    = Basic Player Name a
-    | And   Player Name [ADTree a]
-    | Or    Player Name [ADTree a]
+    = Basic   Name a
+    | And     Name [ADTree a]
+    | Or      Name [ADTree a]
+    | Counter Name (ADTree a) (ADTree a)
 \end{code}
 
 The example ADT in Figure \ref{example-adt} carries information about the
@@ -218,43 +218,45 @@ by the type \mintinline{Haskell}{ADTree (Fractional, Fractional)} and
 represented as follows:
 
 \begin{code}
-Or A "Bank Account" [
-    And A "ATM" [
-        Or A "PIN" [
-            Basic A "Eavesdrop" (0.01, 0.3),
-            And A "Find Note" [
-                Basic D "Memorize" (0.80, 0.1)],
-            Basic A "Force" (0.01, 0.9)],
-        Basic A "Card" (0.1, 0.7)],
-    And A "Online" [
-        Or A "Password" [
-            Basic A "Phishing" (0.90, 0.4),
-            Basic A "Key logger" (0.20, 0.6)],
-        Basic A "User name" (0.90, 0.1),
-        Or D "2nd Auth Factor" [
-            Basic D "Key Fobs" (0.01, 0.1),
-            Basic D "PIN Pad" (0.01, 0.3),
-            Or A "Malware" [
-                Basic A "Browser" (0.20, 0.5),
-                Basic A "OS" (0.20, 0.4)]]]]
+Or "Bank Account" [
+    And "ATM" [
+        Or "PIN" [
+            Basic "Eavesdrop" (0.01, 0.3),
+            Counter "Get Note"
+                (Basic "Find Note" (0.40, 0.3))
+                (Basic "Memorize" (0.80, 0.1)),
+            Basic "Force" (0.01, 0.9)],
+        Basic "Card" (0.1, 0.7)],
+    Counter "Online"
+        (And "Login" [
+            Or "Password" [
+                Basic "Phishing" (0.90, 0.4),
+                Basic "Key logger" (0.20, 0.6)],
+            Basic "User name" (0.90, 0.1)])
+        (Counter "2nd Auth Factor"
+            (Or "Usage" [
+                Basic "Key Fobs" (0.01, 0.1),
+                Basic "PIN Pad" (0.01, 0.3)])
+            (Or "Malware" [
+                Basic "Browser" (0.20, 0.5),
+                Basic "OS" (0.20, 0.4)]))]
 \end{code}
 
 \subsection{Quantitative analysis}
 
 To perform quantitative analysis over customisable basic event attributes, the
 user must be able to specify an algebra on them. There exist three cases which
-this algebra has to take into consideration: OR gates, AND gates, and player
-switches -- where a node has one of its opponent's nodes as a child. Several
-such algebras exist \cite{KordyQuantitative}. ADTree exposes a simplified
-interface for defining such algebras:
+this algebra has to take into consideration: OR gates, AND gates, and COUNTER
+measures. Several such algebras exist \cite{KordyQuantitative}. ADTree exposes a
+simplified interface for defining them:
 
 \begin{code}
 data PSemantics a = MkPSemantics
-    { plus  :: a -> a -> a -- OR operation
-    , zero  :: a           -- OR default
-    , times :: a -> a -> a -- AND operation
-    , one   :: a           -- AND default
-    , minus :: a -> a      -- player switch
+    { plus    :: a -> a -> a
+    , zero    :: a
+    , times   :: a -> a -> a
+    , one     :: a
+    , counter :: a -> a -> a
     }
 \end{code}
 
@@ -285,18 +287,18 @@ On the other hand,
 \begin{code}
 difficulty :: Semantics Rational
 difficulty A = MkPSemantics
-    { plus  = min
-    , zero  = 1
-    , times = max
-    , one   = 0
-    , minus = (1 -)
+    { plus    = min
+    , zero    = 1
+    , times   = max
+    , one     = 0
+    , counter = max
     }
 difficulty D = MkPSemantics
-    { plus  = max
-    , zero  = 0
-    , times = min
-    , one   = 1
-    , minus = (1 -)
+    { plus    = max
+    , zero    = 0
+    , times   = min
+    , one     = 1
+    , counter = min
     }
 \end{code}
 
@@ -325,6 +327,8 @@ difficulty D = MkPSemantics
 
 \label{results}
 \chapter{Results}
+
+\todo{mention LOC}
 
 \label{conclusions}
 \chapter{Conclusions}

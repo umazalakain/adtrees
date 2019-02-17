@@ -21,18 +21,12 @@ import Text.Printf (printf)
 
 type Name = String
 
-data Player = A | D deriving (Show, Eq)
-
 data ADTree a 
     = Basic   Name a
     | And     Name [ADTree a]
     | Or      Name [ADTree a]
     | Counter Name (ADTree a) (ADTree a)
     deriving (Show, Eq)
-
-switchPlayer :: Player -> Player
-switchPlayer A = D
-switchPlayer D = A
 
 -- TODO: check this makes sense
 cutsets :: ADTree a -> [ADTree a]
@@ -59,7 +53,13 @@ data PSemantics a = MkPSemantics
     , counter :: a -> a -> a
     }
 
+data Player = A | D deriving (Show, Eq)
+
 type Semantics a = Player -> PSemantics a
+
+switchPlayer :: Player -> Player
+switchPlayer A = D
+switchPlayer D = A
 
 aggregate :: Semantics a -> Player -> ADTree a -> a
 aggregate _   _ (Basic _ a)     = a
