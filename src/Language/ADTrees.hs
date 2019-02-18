@@ -37,14 +37,14 @@ data ADTree a
 
 cutsets :: ADTree a -> [ADTree a]
 
-cutsets (Basic n a)     = [Basic n a]
+cutsets (Basic n a) = [Basic n a]
 
 -- Take the n-ary cartesian product of the children's cutsets,
 -- then bind each product with an AND.
-cutsets (And n es)      = map (And n) (mapM cutsets es)
+cutsets (And n es) = map (And n) (mapM cutsets es)
 
 -- Append together the cutsets of all subtrees
-cutsets (Or _ es)       = concatMap cutsets es
+cutsets (Or _ es) = concatMap cutsets es
 
 -- Take the binary cartesian product of the attacker's and defender's cutsets,
 -- then bind each product with a COUNTER measure

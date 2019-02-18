@@ -37,6 +37,7 @@
 % Haskell code highlighting
 \usepackage{minted}
 \newenvironment{code}{\VerbatimEnvironment\begin{minted}{haskell}}{\end{minted}}
+\setminted{fontsize=\small,baselinestretch=1}
 
 % Include images
 \usepackage{graphics}
@@ -89,9 +90,9 @@ issued by the Health and Safety Executive.
 
 \section{Contributions}
 
-In \S\ref{tool} I present a Haskell library capable of \textbf{modelling},
-\textbf{rendering}, finding \textbf{minimal cutsets} and performing
-\textbf{quantitative analysis} on attack defense trees.
+In \S\ref{tool} I present \textit{ADTrees}, a Haskell library capable of
+\textbf{modelling}, \textbf{rendering}, finding \textbf{minimal cutsets} and
+performing \textbf{quantitative analysis} on attack defense trees.
 
 I then demonstrate how a CA might use this tool to guide an asses an OES by
 performing a case analysis in \S\ref{evaluation} on the provision of the
@@ -129,8 +130,8 @@ Cyber Assessment Framework:
         \end{itemize}
 \end{description}
 
-\label{tool}
 \chapter{A Haskell library for attack defense trees}
+\label{tool}
 
 \section{Attack defense trees}
 
@@ -312,7 +313,8 @@ difficulty D = MkPSemantics
 Other common algebras for quantitative analysis can be found in Appendix
 \ref{algebras}.
 
-Once a semantics is defined, an attack defense can be inductively evaluated:
+Once a semantics is defined, an attack defense tree can be inductively
+evaluated:
 
 \begin{code}
 evaluate :: Semantics a -> Player -> ADTree a -> a
@@ -352,19 +354,19 @@ The user can then use the evaluation function as follows:
 2 % 5
 \end{code}
 
-\subsection{Minimual cutsets}
+\subsection{Minimal cutsets}
 
 \begin{code}
 cutsets :: ADTree a -> [ADTree a]
 
-cutsets (Basic n a)     = [Basic n a]
+cutsets (Basic n a) = [Basic n a]
 
 -- Take the n-ary cartesian product of the children's cutsets,
 -- then bind each product with an AND.
-cutsets (And n es)      = map (And n) (mapM cutsets es)
+cutsets (And n es) = map (And n) (mapM cutsets es)
 
 -- Append together the cutsets of all subtrees
-cutsets (Or _ es)       = concatMap cutsets es
+cutsets (Or _ es) = concatMap cutsets es
 
 -- Take the binary cartesian product of the attacker's and defender's cutsets,
 -- then bind each product with a COUNTER measure
@@ -391,8 +393,8 @@ translates any \texttt{a} into a string, and the player of the root node,
 dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 \end{code}
 
-\label{evaluation}
 \chapter{Evaluation}
+\label{evaluation}
 
 \begin{figure}[h]
     \label{dns-transactions}
@@ -410,13 +412,13 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 % https://www.ncsc.gov.uk/information/active-cyber-defence-one-year
 % https://www.theregister.co.uk/2017/08/17/uks_internet_operator_nominet_goes_dark/
 
-\label{results}
 \chapter{Results}
+\label{results}
 
 \todo{mention LOC}
 
-\label{conclusions}
 \chapter{Conclusions}
+\label{conclusions}
 
 \bibliographystyle{apalike}
 \bibliography{bibliography}
@@ -431,8 +433,8 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 % How to install it
 % A listing
 
-\label{algebras}
 \chapter{Algebras}
+\label{algebras}
 
 Following is a list of interesting predefined algebras suitable for quantitative
 analysis:
