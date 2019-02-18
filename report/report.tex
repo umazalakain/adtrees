@@ -51,7 +51,7 @@
 
 \title{Supporting Competent Authorities in the Implementation of the NIS
 Directive for Safety-Critical Industries}
-\subtitle{Modelling through attack-defense trees}
+\subtitle{Analysis through attack-defense trees}
 \author{Uma Zalakain \\ \href{mailto:2423394z@student.gla.ac.uk}{2423394z@student.gla.ac.uk}}
 
 {\let\newpage\relax\maketitle}
@@ -192,6 +192,9 @@ ADTrees is inspired by ADTool \footnote{\url{https://github.com/tahti/ADTool2}},
 a graphical interface developed in Java for creating and visualising attack
 defense trees \cite{KordyTool}. While ADTool is a graphical tool, ADTrees is a
 library: this contributes to keeping any superfluous functionality at minimum.
+ADTrees also further simplifies the structure of countermeasure nodes. Both the
+structure and the algebra of attack defense trees can be expressed cleanly
+through Haskell's union types.
 
 \subsection{Tree modelling}
 
@@ -217,6 +220,7 @@ probability and difficulty of each basic event. Such a tree can be represented
 by the type \mintinline{Haskell}{ADTree (Fractional, Fractional)} and
 represented as follows:
 
+\label{example-model}
 \begin{code}
 Or "Bank Account" [
     And "ATM" [
@@ -261,28 +265,29 @@ data PSemantics a = MkPSemantics
 \end{code}
 
 Algebras might need to change according to the player. For example, it might be
-desirable to calculate the cost just for the attacker's actions. This is
+desirable to computer the cost just for the attacker's actions. This is
 accommodated by making the algebra depend on the \mintinline{Haskell}{Player}:
 
 \begin{code}
 type Semantics a = Player -> PSemantics a
 \end{code}
 
-In the following example probability is defined. This does not depend on who the
-current player is, thus that argument is ignored:
+In the following example probability is defined -- which does not depend on who
+the current player is, thus that argument is ignored:
 
 \begin{code}
 probability :: Semantics Rational
 probability _ = MkPSemantics
-    { plus  = (+)
-    , zero  = 0
-    , times = (*)
-    , one   = 1
-    , minus = (1 -)
+    { plus    = \x y -> x + y - x * y
+    , zero    = 0
+    , times   = (*)
+    , one     = 1
+    , counter = (-)
     }
 \end{code}
 
-On the other hand, 
+On the other hand, the difficulty for the attacker depends on the actor of a
+node:
 
 \begin{code}
 difficulty :: Semantics Rational
@@ -302,9 +307,64 @@ difficulty D = MkPSemantics
     }
 \end{code}
 
+Once a semantics is defined, an attack defense can be inductively evaluated:
+
+\begin{code}
+evaluate :: Semantics a -> Player -> ADTree a -> a
+evaluate _   _ (Basic _ a)
+    = a
+evaluate sem p (Or _ cs)
+    = foldr (plus (sem p) . evaluate sem p) (zero $ sem p) cs
+evaluate sem p (And _ cs)
+    = foldr (times (sem p) . evaluate sem p) (one $ sem p) cs
+evaluate sem p (Counter _ a d)
+    = counter (sem p) (evaluate sem p a) (evaluate sem (switchPlayer p) d)
+\end{code}
+
+As shown in \ref{example-model}, attack defense trees may contain multiple
+attributes. To facilitate the reuse of algebras, a tree with multiple attributes
+can be translated into a tree with a single attribute, to which an already
+defined algebra can be applied. This translation is possible because
+\mintinline{Haskell}{ADTree a} follows the functor laws.
+
+In the following example, \mintinline{Haskell}{fmap} applies a function to the
+attributes of all \mintinline{Haskell}{Basic} events of a tree, while
+\mintinline{Haskell}{snd} selects the second element of a tuple. Put together, a
+tree with two attributes is translated into a tree with just the second of those
+attributes:
+
+\begin{code}
+> :t example
+    example :: ADTree (Rational, Rational)
+> :t fmap snd example
+    fmap snd example :: ADTree Rational
+\end{code}
+
+The user can then use the evaluation function as follows:
+
+\begin{code}
+> evaluate difficulty A (fmap snd example)
+2 % 5
+\end{code}
+
 \subsection{Minimual cutsets}
-\subsection{Visualisation}
-\footnote{\url{https://github.com/tomahawkins/fault-tree}}
+
+\subsection{Rendering}
+
+ADTree uses Graphviz\footnote{\url{https://graphviz.org}} for tree rendering.
+ADTree automatically translates a given tree into its Graphviz representation.
+Then Graphviz can be used to transform this declarative description of a graph
+into an image. The tree in Figure \ref{example-adt} is an example of this.
+This idea was inspired by \textit{fault-tree}, a small Haskell library for fault
+trees\footnote{\url{https://github.com/tomahawkins/fault-tree}}.
+
+The API for the translation into Graphviz is the following:
+
+\begin{code}
+dot :: (Eq a) => Player -> (a -> String) -> ADTree a -> String
+\end{code}
+
+On the leftmost, 
 
 \label{evaluation}
 \chapter{Evaluation}

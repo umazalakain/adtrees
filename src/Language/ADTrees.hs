@@ -106,7 +106,7 @@ dot pl fs r = unlines
 
 probability :: Semantics Rational
 probability _ = MkPSemantics
-    { plus    = (+)
+    { plus    = \x y -> x + y - x * y
     , zero    = 0
     , times   = (*)
     , one     = 1
