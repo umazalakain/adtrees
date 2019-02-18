@@ -177,6 +177,7 @@ are more complex \cite{KordyDAG}.
 is a small Haskell library for attack defense trees. It is designed with the
 following goals in mind:
 
+\todo{this feels too short}
 \begin{itemize}
     \item To provide a \textbf{small and simple} interface for modelling attack
         defense trees while remaining \textbf{extendable}. \todo{mention no
@@ -256,11 +257,11 @@ simplified interface for defining them:
 
 \begin{code}
 data PSemantics a = MkPSemantics
-    { plus    :: a -> a -> a
-    , zero    :: a
-    , times   :: a -> a -> a
-    , one     :: a
-    , counter :: a -> a -> a
+    { plus    :: a -> a -> a -- OR operator
+    , zero    :: a           -- OR default
+    , times   :: a -> a -> a -- AND operator
+    , one     :: a           -- AND default
+    , counter :: a -> a -> a -- COUNTER measure
     }
 \end{code}
 
@@ -348,6 +349,16 @@ The user can then use the evaluation function as follows:
 \end{code}
 
 \subsection{Minimual cutsets}
+
+\begin{code}
+cutsets :: ADTree a -> [ADTree a]
+cutsets (Basic n a)     = [Basic n a]
+cutsets (And n es)      = map (And n) (mapM cutsets es) -- cartesian product
+cutsets (Or _ es)       = concatMap cutsets es
+cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
+\end{code}
+
+\todo{Decision making}
 
 \subsection{Rendering}
 

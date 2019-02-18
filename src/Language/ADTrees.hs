@@ -30,12 +30,11 @@ data ADTree a
     | Counter Name (ADTree a) (ADTree a)
     deriving (Show, Eq, Functor)
 
--- TODO: check this makes sense
 cutsets :: ADTree a -> [ADTree a]
-cutsets (Basic n a) = [Basic n a]
-cutsets (And n es)  = map (And n) (mapM cutsets es) -- cartesian product
-cutsets (Or _ es)   = concatMap cutsets es
-cutsets (Counter n a d) = undefined
+cutsets (Basic n a)     = [Basic n a]
+cutsets (And n es)      = map (And n) (mapM cutsets es) -- cartesian product
+cutsets (Or _ es)       = concatMap cutsets es
+cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 
 flatten :: ADTree a -> [ADTree a]
 flatten c@Basic{}         = [c]
