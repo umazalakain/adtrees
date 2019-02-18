@@ -1,9 +1,11 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 module Language.ADTrees
     ( Player(..)
     , ADTree(..)
     , Semantics
     , PSemantics(..)
-    , aggregate
+    , evaluate
     , cutsets
     , flatten
     , dot
@@ -26,7 +28,7 @@ data ADTree a
     | And     Name [ADTree a]
     | Or      Name [ADTree a]
     | Counter Name (ADTree a) (ADTree a)
-    deriving (Show, Eq)
+    deriving (Show, Eq, Functor)
 
 -- TODO: check this makes sense
 cutsets :: ADTree a -> [ADTree a]
@@ -61,11 +63,11 @@ switchPlayer :: Player -> Player
 switchPlayer A = D
 switchPlayer D = A
 
-aggregate :: Semantics a -> Player -> ADTree a -> a
-aggregate _   _ (Basic _ a)     = a
-aggregate sem p (Or _ cs)       = foldr (plus (sem p) . aggregate sem p) (zero $ sem p) cs
-aggregate sem p (And _ cs)      = foldr (times (sem p) . aggregate sem p) (one $ sem p) cs
-aggregate sem p (Counter _ a d) = counter (sem p) (aggregate sem p a) (aggregate sem (switchPlayer p) d)
+evaluate :: Semantics a -> Player -> ADTree a -> a
+evaluate _   _ (Basic _ a)     = a
+evaluate sem p (Or _ cs)       = foldr (plus (sem p) . evaluate sem p) (zero $ sem p) cs
+evaluate sem p (And _ cs)      = foldr (times (sem p) . evaluate sem p) (one $ sem p) cs
+evaluate sem p (Counter _ a d) = counter (sem p) (evaluate sem p a) (evaluate sem (switchPlayer p) d)
 
 -- --------- --
 -- Rendering --
