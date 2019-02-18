@@ -11,6 +11,11 @@ module Language.ADTrees
     , dot
     , probability
     , difficulty
+    , cost
+    , skill
+    , timeParallel
+    , timeSequence
+    , satisfiability
     ) where
 
 import Data.List (lookup)
@@ -31,9 +36,18 @@ data ADTree a
     deriving (Show, Eq, Functor)
 
 cutsets :: ADTree a -> [ADTree a]
+
 cutsets (Basic n a)     = [Basic n a]
-cutsets (And n es)      = map (And n) (mapM cutsets es) -- cartesian product
+
+-- Take the n-ary cartesian product of the children's cutsets,
+-- then bind each product with an AND.
+cutsets (And n es)      = map (And n) (mapM cutsets es)
+
+-- Append together the cutsets of all subtrees
 cutsets (Or _ es)       = concatMap cutsets es
+
+-- Take the binary cartesian product of the attacker's and defender's cutsets,
+-- then bind each product with a COUNTER measure
 cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 
 flatten :: ADTree a -> [ADTree a]
@@ -103,6 +117,9 @@ dot fs pl r = unlines
 -- Example algebras --
 -- ---------------- --
 
+{-
+   Probability of success, assuming all actions are mutually independent
+-}
 probability :: Semantics Rational
 probability _ = MkPSemantics
     { plus    = \x y -> x + y - x * y
@@ -112,6 +129,9 @@ probability _ = MkPSemantics
     , counter = (-)
     }
 
+{-
+   Difficulty for the attacker, assuming all attacker's actions are in place
+-}
 difficulty :: Semantics Rational
 difficulty A = MkPSemantics
     { plus    = min
@@ -128,4 +148,94 @@ difficulty D = MkPSemantics
     , counter = min
     }
 
--- TODO: Cost
+{-
+   Minimal cost for the attacker, assuming that all attacker's actions are in
+   place and that resources are not reused.
+-}
+cost :: Semantics Int
+cost A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = (+)
+    , one     = 0
+    , counter = (+)
+    }
+cost D = MkPSemantics
+    { plus    = (+)
+    , zero    = 0
+    , times   = min
+    , one     = maxBound
+    , counter = min
+    }
+
+{-
+   Minimal skill needed for the attacker, assuming that all attacker's actions
+   are in place.
+-}
+skill :: Semantics Int
+skill A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = max
+    , one     = minBound
+    , counter = max
+    }
+skill D = MkPSemantics
+    { plus    = max
+    , zero    = minBound
+    , times   = min
+    , one     = minBound
+    , counter = min
+    }
+
+{-
+   Minimal time needed for the attacker, assuming that all attacker's actions
+   are in place and that actions are executed in parallel.
+-}
+timeParallel :: Semantics Int
+timeParallel A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = max
+    , one     = minBound
+    , counter = max
+    }
+timeParallel D = MkPSemantics
+    { plus    = max
+    , zero    = minBound
+    , times   = min
+    , one     = minBound
+    , counter = min
+    }
+
+{-
+   Minimal time needed for the attacker, assuming that all attacker's actions
+   are in place and that actions are executed in sequence.
+-}
+timeSequence :: Semantics Int
+timeSequence A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = (+)
+    , one     = 0
+    , counter = (+)
+    }
+timeSequence D = MkPSemantics
+    { plus    = (+)
+    , zero    = 0
+    , times   = min
+    , one     = minBound
+    , counter = min
+    }
+
+{-
+    Satisfiability of the scenario.
+-}
+satisfiability :: Semantics Bool
+satisfiability _ = MkPSemantics
+    { plus    = (||)
+    , zero    = False
+    , times   = (&&)
+    , one     = True
+    , counter = \x y -> x && not y
+    }

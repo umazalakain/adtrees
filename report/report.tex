@@ -100,6 +100,7 @@ Nominet\footnote{\url{https://nominet.uk}} -- where Ofcom is the competent
 authority as the designated regulator for digital infrastructure.
 
 \todo{Introduce other sections}
+\todo{Warn familiarity with Haskell}
 
 Concretely, the library eases the evaluation of the following points of the
 Cyber Assessment Framework:
@@ -287,7 +288,7 @@ probability _ = MkPSemantics
     }
 \end{code}
 
-On the other hand, the difficulty for the attacker depends on the actor of a
+On the other hand, the difficulty for the attacker depends on the player of each
 node:
 
 \begin{code}
@@ -307,6 +308,9 @@ difficulty D = MkPSemantics
     , counter = min
     }
 \end{code}
+
+Other common algebras for quantitative analysis can be found in Appendix
+\ref{algebras}.
 
 Once a semantics is defined, an attack defense can be inductively evaluated:
 
@@ -352,9 +356,18 @@ The user can then use the evaluation function as follows:
 
 \begin{code}
 cutsets :: ADTree a -> [ADTree a]
+
 cutsets (Basic n a)     = [Basic n a]
-cutsets (And n es)      = map (And n) (mapM cutsets es) -- cartesian product
+
+-- Take the n-ary cartesian product of the children's cutsets,
+-- then bind each product with an AND.
+cutsets (And n es)      = map (And n) (mapM cutsets es)
+
+-- Append together the cutsets of all subtrees
 cutsets (Or _ es)       = concatMap cutsets es
+
+-- Take the binary cartesian product of the attacker's and defender's cutsets,
+-- then bind each product with a COUNTER measure
 cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 \end{code}
 
@@ -418,6 +431,136 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 % How to install it
 % A listing
 
+\label{algebras}
+\chapter{Algebras}
+
+Following is a list of interesting predefined algebras suitable for quantitative
+analysis:
+
+\begin{code}
+{-
+   Probability of success, assuming all actions are mutually independent
+-}
+probability :: Semantics Rational
+probability _ = MkPSemantics
+    { plus    = \x y -> x + y - x * y
+    , zero    = 0
+    , times   = (*)
+    , one     = 1
+    , counter = (-)
+    }
+
+{-
+   Difficulty for the attacker, assuming all attacker's actions are in place
+-}
+difficulty :: Semantics Rational
+difficulty A = MkPSemantics
+    { plus    = min
+    , zero    = 1
+    , times   = max
+    , one     = 0
+    , counter = max
+    }
+difficulty D = MkPSemantics
+    { plus    = max
+    , zero    = 0
+    , times   = min
+    , one     = 1
+    , counter = min
+    }
+
+{-
+   Minimal cost for the attacker, assuming that all attacker's actions are in
+   place and that resources are not reused.
+-}
+cost :: Semantics Int
+cost A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = (+)
+    , one     = 0
+    , counter = (+)
+    }
+cost D = MkPSemantics
+    { plus    = (+)
+    , zero    = 0
+    , times   = min
+    , one     = maxBound
+    , counter = min
+    }
+
+{-
+   Minimal skill needed for the attacker, assuming that all attacker's actions
+   are in place.
+-}
+skill :: Semantics Int
+skill A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = max
+    , one     = minBound
+    , counter = max
+    }
+skill D = MkPSemantics
+    { plus    = max
+    , zero    = minBound
+    , times   = min
+    , one     = minBound
+    , counter = min
+    }
+
+{-
+   Minimal time needed for the attacker, assuming that all attacker's actions
+   are in place and that actions are executed in parallel.
+-}
+timeParallel :: Semantics Int
+timeParallel A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = max
+    , one     = minBound
+    , counter = max
+    }
+timeParallel D = MkPSemantics
+    { plus    = max
+    , zero    = minBound
+    , times   = min
+    , one     = minBound
+    , counter = min
+    }
+
+{-
+   Minimal time needed for the attacker, assuming that all attacker's actions
+   are in place and that actions are executed in sequence.
+-}
+timeSequence :: Semantics Int
+timeSequence A = MkPSemantics
+    { plus    = min
+    , zero    = maxBound
+    , times   = (+)
+    , one     = 0
+    , counter = (+)
+    }
+timeSequence D = MkPSemantics
+    { plus    = (+)
+    , zero    = 0
+    , times   = min
+    , one     = minBound
+    , counter = min
+    }
+
+{-
+    Satisfiability of the scenario.
+-}
+satisfiability :: Semantics Bool
+satisfiability _ = MkPSemantics
+    { plus    = (||)
+    , zero    = False
+    , times   = (&&)
+    , one     = True
+    , counter = \x y -> x && not y
+    }
+\end{code}
 \end{appendices}
 
 \end{document}
