@@ -35,7 +35,7 @@ example =
 
 main :: IO ()
 main = do args <- getArgs
-          writeFile (args !! 0) (dot A fsExampleAttribute example)
+          writeFile (args !! 0) (dot fsExampleAttribute A example)
           pid <- runCommand $ printf "dot -Tpng -v %s -o%s" (args !! 0) (args !! 1)
           waitForProcess pid
           return ()

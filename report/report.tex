@@ -358,13 +358,14 @@ into an image. The tree in Figure \ref{example-adt} is an example of this.
 This idea was inspired by \textit{fault-tree}, a small Haskell library for fault
 trees\footnote{\url{https://github.com/tomahawkins/fault-tree}}.
 
-The API for the translation into Graphviz is the following:
+Assuming equality on attribute \texttt{a} is decidable, given a function that
+translates any \texttt{a} into a string, and the player of the root node,
+\mintinline{Haskell}{dot} will generate a Graphviz representation of an
+\mintinline{Haskell}{ADTree a}:
 
 \begin{code}
-dot :: (Eq a) => Player -> (a -> String) -> ADTree a -> String
+dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 \end{code}
-
-On the leftmost, 
 
 \label{evaluation}
 \chapter{Evaluation}

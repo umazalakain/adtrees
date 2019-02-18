@@ -73,8 +73,8 @@ evaluate sem p (Counter _ a d) = counter (sem p) (evaluate sem p a) (evaluate se
 -- Rendering --
 -- --------- --
 
-dot :: (Eq a) => Player -> (a -> String) -> ADTree a -> String
-dot pl fs r = unlines
+dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
+dot fs pl r = unlines
     [ "digraph {"
     , "\trankdir=BT"
     , "\tnode [style=\"bold,rounded\"]"

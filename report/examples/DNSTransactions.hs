@@ -37,7 +37,7 @@ example =
 
 main :: IO ()
 main = do args <- getArgs
-          writeFile (args !! 0) (dot A (const " ") example)
+          writeFile (args !! 0) (dot (const " ") A example)
           pid <- runCommand $ printf "dot -Gsize=\"16.52,11.68\" -Gratio=\"fill\"  -Glandscape=false -Gsplines=ortho -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
           waitForProcess pid
           return ()
