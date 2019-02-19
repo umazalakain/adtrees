@@ -356,24 +356,57 @@ The user can then use the evaluation function as follows:
 
 \subsection{Minimal cutsets}
 
+In standard fault trees, cutsets are sets of events that cause the top-level
+fault to occur. Minimal cutsets are those cutsets that do not contain any other
+cutsets as a subset.
+
+Attack defense trees introduce countermeasures nodes containing opposing
+subnodes. I extend the concept of minimal cutsets to include countermeasure
+nodes, for which the combinatory product of the attacker's and the defender's
+cutsets are given. The resulting cutsets represent all possible attack-defense
+interaction which can lead to the root goal to be achieved.
+
 \begin{code}
 cutsets :: ADTree a -> [ADTree a]
 
 cutsets (Basic n a) = [Basic n a]
 
--- Take the n-ary cartesian product of the children's cutsets,
--- then bind each product with an AND.
+-- One cutset from every children
+-- Cartesian product of all combinations
 cutsets (And n es) = map (And n) (mapM cutsets es)
 
--- Append together the cutsets of all subtrees
-cutsets (Or _ es) = concatMap cutsets es
+-- Any cutset from any children
+cutsets (Or n es) = map (Or n . (: [])) (concatMap cutsets es)
 
--- Take the binary cartesian product of the attacker's and defender's cutsets,
--- then bind each product with a COUNTER measure
+-- One cutset from the attacker, one from the deffender
+-- Cartesian product of all combinations
 cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 \end{code}
 
-\todo{Decision making}
+These cutsets can then be used for decision making purposes. The folling snippet
+generates all possible cutsets for the tree represented in Figure
+\ref{example-adt}, orders them ascendingly according to probability, and yields
+back the most probable cutset. The result has been indented for clarity.
+
+\begin{code}
+> last (sortOn (evaluate probability A . fmap fst) (cutsets example))
+Or "Bank Account" [
+    Counter "Online"
+        (And "Login" [
+            Or "Password" [
+                Basic "Phishing" (9 % 10,2 % 5)],
+            Basic "User name" (9 % 10,1 % 10)])
+        (Counter "2nd Auth Factor"
+            (Or "Usage" [
+                Basic "PIN Pad" (1 % 100,3 % 10)])
+            (Or "Malware" [
+                Basic "OS" (1 % 5,2 % 5)]))]
+\end{code}
+
+Similar techniques can be used to aid decision making. As an example, the cost
+of fighting script-kiddies and other unskilled attackers can be computed by
+filtering cutsets beneath a certain level of attacker-skill, joining those
+cutsets back into a common tree, then computing its cost for the defender.
 
 \subsection{Rendering}
 
@@ -402,6 +435,8 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
     \includegraphics[width=\paperheight, angle=90]{dns}
     \caption{}
 \end{figure}
+
+\cite{secdns}
 
 % https://tools.ietf.org/html/rfc3833
 % Showcase the tool with an example
