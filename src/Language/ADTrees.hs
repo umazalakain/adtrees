@@ -18,7 +18,7 @@ module Language.ADTrees
     , satisfiability
     ) where
 
-import Data.List (lookup)
+import Data.List (lookup, intercalate, words)
 import Data.Maybe (fromJust)
 import Text.Printf (printf)
 
@@ -87,7 +87,7 @@ evaluate sem p (Counter _ a d) = counter (sem p) (evaluate sem p a) (evaluate se
 -- --------- --
 
 dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
-dot fs pl r = unlines
+dot fa pl r = unlines
     [ "digraph {"
     , "\trankdir=BT"
     , "\tnode [style=\"bold,rounded\"]"
@@ -102,16 +102,17 @@ dot fs pl r = unlines
         color A = "#ff0000"
         color D = "#00ff00"
 
-        nodes p e@(Basic n a)     = printf "\t%s [label=<%s <br/> <FONT POINT-SIZE=\"10\">%s</FONT>>,color=\"%s\",shape=box]" (eventId e) n (fs a) (color p)
-        nodes p e@(And n cs)      = unlines $ printf "\t%s [label=<%s <br/> AND>,color=\"%s\",shape=box]\n" (eventId e) n (color p) : map (nodes p) cs
-        nodes p e@(Or n cs)       = unlines $ printf "\t%s [label=<%s <br/> OR>,color=\"%s\",shape=box]\n" (eventId e) n (color p) : map (nodes p) cs
-        nodes p e@(Counter n a d) = printf "\t%s [label=<%s <br/> COUNTER>,color=\"%s\",shape=diamond]\n" (eventId e) n (color p) ++ nodes p a ++ nodes (switchPlayer p) d
+        breaks = intercalate "<br/>" . words
+
+        nodes p e@(Basic n a)     = printf "\t%s [label=<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>,color=\"%s\",shape=box]" (eventId e) (breaks n) (fa a) (color p)
+        nodes p e@(And n cs)      = unlines $ printf "\t%s [label=<%s>,color=\"%s\",shape=triangle]\n" (eventId e) (breaks n) (color p) : map (nodes p) cs
+        nodes p e@(Or n cs)       = unlines $ printf "\t%s [label=<%s>,color=\"%s\",shape=invtriangle]\n" (eventId e) (breaks n) (color p) : map (nodes p) cs
+        nodes p e@(Counter n a d) = printf "\t%s [label=<%s>,color=\"%s\",shape=diamond]\n" (eventId e) (breaks n) (color p) ++ nodes p a ++ nodes (switchPlayer p) d
 
         edges Basic{} = ""
         edges e@(And _ cs)  = unlines $ [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ] ++ map edges cs
         edges e@(Or _ cs)   = unlines $ [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ] ++ map edges cs
         edges e@(Counter _ a d) = printf "\t%s -> %s" (eventId a) (eventId e) ++ printf "\t%s -> %s" (eventId d) (eventId e) ++ edges a ++ edges d
-
 
 -- ---------------- --
 -- Example algebras --
