@@ -418,12 +418,18 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 This section uses ADTrees to model the security issues involved in providing an
 authoritative DNS service for a top-level domain like \texttt{.uk}. It limits
 itself to analysing those weaknesses and defensive meassures pertaining the
-hosting of DNS services, and ignores any attacks that could take place during
-interaction with other machines.
+hosting of DNS services in itself, and ignores any attacks that could take place
+during transmission.
 
-The main source for both threats and the protective meassures is \cite{secdns}.
-Clarifications and further information can be found in \cite{weaknesses-dns},
-\cite{rfc3833} and \cite{dns-bind-sec}.
+These threats and the protective meassures regarding the hosting of DNS services
+are extracted from \cite[sections 3, 5, and 7]{secdns}. A wider and more
+in-depth view can be found in \cite{weaknesses-dns}, \cite{rfc3833} and
+\cite{dns-bind-sec}.
+
+\todo{Some quantitative goal to make decisions}
+\todo{Mention lack of quantitative data}
+\todo{Make up data}
+\todo{Prioritise defensive meassures}
 
 \begin{figure}[h]
     \label{dns-transactions}
@@ -451,9 +457,6 @@ Cyber Assessment Framework:
                 understanding of how such disruption might arise as a
                 consequence of possible attacker actions and the security
                 properties of your networks and information systems.
-            \item The output from your risk management process is a clear set of
-                security requirements that will address the risks in line with
-                your organisational approach to security.
         \end{itemize}
 
     \item [B1a]
