@@ -17,19 +17,17 @@ example =
                         , Basic "tuning of SOA expiration parameters" ()
                         ]
                     )
-                , Counter "modified information"
-                    ( Or ""
-                        [ Basic "master compromised" ()
-                        , Basic "secondary compromised" ()
-                        , Basic "social engineering" ()
-                        ]
-                    )
-                    ( And ""
-                        [ Basic "harden master" ()
-                        , Basic "establish SLA and OLA with secondary operator" ()
-                        , Basic "secure procedures and education" ()
-                        ]
-                    )
+                , Or "modified information"
+                    [ Counter ""
+                        ( Basic "master compromised" () )
+                        ( Basic "harden master" () )
+                    , Counter ""
+                        ( Basic "secondary compromised" () )
+                        ( Basic "establish SLA and OLA with secondary operator" () )
+                    , Counter ""
+                        ( Basic "social engineering" () )
+                        ( Basic "secure procedures and education" () )
+                    ]
                 , Or "domain name hijacking"
                     [ Basic "typosquatting" ()
                     , Basic "IDN abuse" ()
@@ -41,18 +39,16 @@ example =
             , Basic "NSEC walk" ()
             ]
         , Or "denial of service"
-            [ Or "DNS servers"
-                [ Counter "system/application crash"
-                    ( Basic "specially crafted packet" () )
-                    ( Basic "diversity OS and DNS server" () )
-                , Counter "resource starvation"
-                    ( Basic "(D)DoS attack" () )
-                    ( Or ""
-                        [ Basic "system and network overprovisioning" ()
-                        , Basic "deploy unicast" ()
-                        ]
-                    )
-                ]
+            [ Counter "system/application crash"
+                ( Basic "specially crafted packet" () )
+                ( Basic "diversity OS and DNS server" () )
+            , Counter "resource starvation"
+                ( Basic "(D)DoS attack" () )
+                ( Or ""
+                    [ Basic "system and network overprovisioning" ()
+                    , Basic "deploy unicast" ()
+                    ]
+                )
             ]
         ]
 
