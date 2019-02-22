@@ -50,6 +50,12 @@
   urlcolor=darkgray,
   ]{hyperref}
 
+% Change the geometry of some of the pages 
+\usepackage{geometry}
+
+% Put some pages in landscape
+\usepackage{rotating}
+
 \begin{document}
 
 \title{Supporting Competent Authorities in the Implementation of the NIS
@@ -424,8 +430,9 @@ during transmission -- these are extensively documented in
 \cite{weaknesses-dns}, \cite{rfc3833} and \cite{dns-bind-sec}.
 
 Both threats and protective measures are extracted from \cite[sections 3, 5,
-7, and 10]{secdns}. Some are omitted, as they are only pertinent to enterprise
-environments, not to the service a top-level domain resolver would offer. 
+7, and 10]{secdns} and \cite{dns-threat-analysis}. Some are omitted, as they are
+only pertinent to enterprise environments, not to the service a top-level domain
+resolver would offer. 
 
 Unfortunately, uniform statistical data concerning these threads and measures
 is either scarce or nonexistent.
@@ -434,12 +441,14 @@ is either scarce or nonexistent.
 \todo{Make up data}
 \todo{Prioritise defensive measures}
 
-\begin{figure}[h]
-    \label{dns-transactions}
+\newgeometry{top=0.5cm,bottom=0.5cm}
+\begin{sidewaysfigure}
+    \label{dns-tree}
     \centering
-    \includegraphics[height=0.7\paperheight]{dns}
+    \includegraphics[width=1.3\paperwidth]{dns}
     \caption{}
-\end{figure}
+\end{sidewaysfigure}
+\restoregeometry
 
 \chapter{Results}
 \label{results}

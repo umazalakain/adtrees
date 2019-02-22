@@ -7,51 +7,59 @@ import Language.ADTrees
 
 example :: ADTree ()
 example =
-    Or "attack DNS hosting" [
-        Or "host platform threads" [
-            Counter "OS"
-                (Or "" [
-                    Basic "vulnerate OS" (),
-                    Basic "corrupt system config" ()])
-                (And "" [
-                    Basic "patch OS" (),
-                    Basic "follow NIST's recomm" ()]),
-            Counter "DNS server"
-                (Or "" [
-                    Basic "vulnerate DNS server" (),
-                    Basic "corrupt DNS config" ()])
-                (And "" [
-                    Basic "run latest" (),
-                    Basic "keep config updated" (),
-                    Basic "review vulnerabilities" (),
-                    Basic "turn off Version Query" (),
-                    Basic "run with basic privileges" (),
-                    Basic "run isolated" (),
-                    Basic "do not recurse" ()]),
-            Counter "availability"
-                (Or "DoS" [
-                    Basic "external DoS" (),
-                    Basic "ARP spoofing" ()])
-                (Basic "network and geographic dispersion" ()),
-            Counter "integrity"
-                (Basic "MiTM on LAN" ())
-                (Basic "DNSSEC" ())],
-        Counter "DNS data threats" 
-            (Or "" [
-                Basic "Lame delegation" (),
-                Basic "Zone drift and zone thrash" (),
-                Basic "Leak information" ()])
-            (And "" [
-                Basic "Appropriate refresh value" (),
-                Basic "Appropriate retry value" (),
-                Basic "Appropriate expire value" (),
-                Basic "Appropriate TTL value" (),
-                Basic "Review of TXT RRs" (),
-                Basic "Integrity check zone file" ()])]
+    Or "DNS"
+        [ Or "data corruption"
+            [ Or "repository corruption"
+                [ Counter "outdated information"
+                    ( Basic "(D)DoS on hidden master" () )
+                    ( Or ""
+                        [ Basic "out-of-band replication" ()
+                        , Basic "tuning of SOA expiration parameters" ()
+                        ]
+                    )
+                , Counter "modified information"
+                    ( Or ""
+                        [ Basic "master compromised" ()
+                        , Basic "secondary compromised" ()
+                        , Basic "social engineering" ()
+                        ]
+                    )
+                    ( And ""
+                        [ Basic "harden master" ()
+                        , Basic "establish SLA and OLA with secondary operator" ()
+                        , Basic "secure procedures and education" ()
+                        ]
+                    )
+                , Or "domain name hijacking"
+                    [ Basic "typosquatting" ()
+                    , Basic "IDN abuse" ()
+                    ]
+                ]
+            ]
+        , Or "privacy"
+            [ Basic "cache snooping" ()
+            , Basic "NSEC walk" ()
+            ]
+        , Or "denial of service"
+            [ Or "DNS servers"
+                [ Counter "system/application crash"
+                    ( Basic "specially crafted packet" () )
+                    ( Basic "diversity OS and DNS server" () )
+                , Counter "resource starvation"
+                    ( Basic "(D)DoS attack" () )
+                    ( Or ""
+                        [ Basic "system and network overprovisioning" ()
+                        , Basic "deploy unicast" ()
+                        ]
+                    )
+                ]
+            ]
+        ]
+
 
 main :: IO ()
 main = do args <- getArgs
           writeFile (args !! 0) (dot (const " ") A example)
-          pid <- runCommand $ printf "dot -Ngroup=A -Gratio=\"compress\" -Gdpi=300 -Gsize=\"11.7,8.3!\" -Glandscape=true -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
+          pid <- runCommand $ printf "dot Gratio=\"compress\" -Gdpi=300 -Gsize=\"8.3,11.7!\" -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
           waitForProcess pid
           return ()
