@@ -365,10 +365,11 @@ cutsets (Or n es) = map (Or n . (: [])) (concatMap cutsets es)
 -- Cartesian product of all combinations
 cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 \end{code}
+%stopzone
 
-These cutsets can then be used for decision making purposes. The folling snippet
-generates all possible cutsets for the tree represented in Figure
-\ref{example-adt}, orders them ascendingly according to probability, and yields
+These cutsets can then be used for decision making purposes. The following
+snippet generates all possible cutsets for the tree represented in Figure
+\ref{example-adt}, orders them ascendantly according to probability, and yields
 back the most probable cutset. The result has been indented for clarity.
 
 \begin{code}
@@ -417,19 +418,21 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 
 This section uses ADTrees to model the security issues involved in providing an
 authoritative DNS service for a top-level domain like \texttt{.uk}. It limits
-itself to analysing those weaknesses and defensive meassures pertaining the
-hosting of DNS services in itself, and ignores any attacks that could take place
-during transmission.
+itself to analysing those weaknesses and defensive measures pertaining the
+hosting of DNS services in itself, ignoring any attacks that could take place
+during transmission -- these are extensively documented in
+\cite{weaknesses-dns}, \cite{rfc3833} and \cite{dns-bind-sec}.
 
-These threats and the protective meassures regarding the hosting of DNS services
-are extracted from \cite[sections 3, 5, and 7]{secdns}. A wider and more
-in-depth view can be found in \cite{weaknesses-dns}, \cite{rfc3833} and
-\cite{dns-bind-sec}.
+Both threats and protective measures are extracted from \cite[sections 3, 5,
+7, and 10]{secdns}. Some are omitted, as they are only pertinent to enterprise
+environments, not to the service a top-level domain resolver would offer. 
+
+Unfortunately, uniform statistical data concerning these threads and measures
+is either scarce or nonexistent.
 
 \todo{Some quantitative goal to make decisions}
-\todo{Mention lack of quantitative data}
 \todo{Make up data}
-\todo{Prioritise defensive meassures}
+\todo{Prioritise defensive measures}
 
 \begin{figure}[h]
     \label{dns-transactions}

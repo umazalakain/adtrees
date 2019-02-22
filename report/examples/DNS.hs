@@ -33,15 +33,25 @@ example =
                     Basic "external DoS" (),
                     Basic "ARP spoofing" ()])
                 (Basic "network and geographic dispersion" ()),
-            Basic "MiTM on LAN" ()],
-        Or "DNS data threats" [
-            Basic "Lame delegation" (),
-            Basic "Zone drift and zone thrash" (),
-            Basic "Leak information" ()]]
+            Counter "integrity"
+                (Basic "MiTM on LAN" ())
+                (Basic "DNSSEC" ())],
+        Counter "DNS data threats" 
+            (Or "" [
+                Basic "Lame delegation" (),
+                Basic "Zone drift and zone thrash" (),
+                Basic "Leak information" ()])
+            (And "" [
+                Basic "Appropriate refresh value" (),
+                Basic "Appropriate retry value" (),
+                Basic "Appropriate expire value" (),
+                Basic "Appropriate TTL value" (),
+                Basic "Review of TXT RRs" (),
+                Basic "Integrity check zone file" ()])]
 
 main :: IO ()
 main = do args <- getArgs
           writeFile (args !! 0) (dot (const " ") A example)
-          pid <- runCommand $ printf "dot -Gratio=\"fill\" -Gdpi=300 -Gsize=\"11.7,8.3!\" -Glandscape=true -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
+          pid <- runCommand $ printf "dot -Ngroup=A -Gratio=\"compress\" -Gdpi=300 -Gsize=\"11.7,8.3!\" -Glandscape=true -Tpng -v \"%s\" -o\"%s\"" (args !! 0) (args !! 1)
           waitForProcess pid
           return ()
