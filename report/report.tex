@@ -511,34 +511,48 @@ kind of conclusions ADTrees facilitates:
 \chapter{Results}
 \label{results}
 
-\todo{mention LOC}
-Concretely, the library eases the evaluation of the following points of the
-Cyber Assessment Framework:
+\S\ref{evaluation} provides an example use case for ADTrees where a
+security-critical system is modelled and quantitatively analysed. This use case
+can be easily extended to include more detailed (even non-numerical) attributes
+too -- failure types, cost, times, detectability, etc. The depth of such
+analyses is  independent of ADTrees; scenarios can be modelled more thoroughly.
 
-\todo{revise these are met in evaluation}
-\begin{description}
-    \item [A2a]
-        \begin{itemize}
-            \item Your organisational process ensures that security risks to
-                networks and information systems relevant to essential services
-                are identified, analysed, prioritised, and managed.
-            \item Your approach to risk is focused on the possibility of
-                disruption to your essential service, leading to a detailed
-                understanding of how such disruption might arise as a
-                consequence of possible attacker actions and the security
-                properties of your networks and information systems.
-        \end{itemize}
+Regardless, the produced example highlights how ADTrees contributes to the
+following points of the Cyber Assessment Framework:
 
-    \item [B1a]
-        \begin{itemize}
-            \item Your systems are designed so that they remain secure even when
-                user security policies and processes are not always followed.
-        \end{itemize}
-\end{description}
+
+\begin{itemize}
+    \item 
+        \textbf{A2a.} \textit{Your organisational process ensures that security
+        risks to networks and information systems relevant to essential services
+        are identified, analysed, prioritised, and managed.}
+
+        The security risks are made concrete with the help of the model.  Their
+        identification and analysis is made easier. Computation on the model
+        makes quantitative prioritisation possible.
+
+    \item
+        \textbf{A2a.} \textit{Your approach to risk is focused on the
+        possibility of disruption to your essential service, leading to a
+        detailed understanding of how such disruption might arise as a
+        consequence of possible attacker actions and the security properties of
+        your networks and information systems.}
+
+        \textbf{B1a.} \textit{Your systems are designed so that they remain
+        secure even when user security policies and processes are not always
+        followed.}
+
+        Computing minimal cutsets on the model returns all the possible
+        successful attack scenarios, highlighting the interaction between
+        attacks and defense mechanisms. Disruption can be further analysed by
+        using relevant attributes -- e.g. failure modes.
+\end{itemize}
 
 
 \chapter{Conclusions}
 \label{conclusions}
+
+\todo{mention LOC}
 
 \bibliographystyle{apalike}
 \bibliography{bibliography}
