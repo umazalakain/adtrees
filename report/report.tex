@@ -24,7 +24,7 @@
 % Haskell code highlighting
 \usepackage{minted}
 \newenvironment{code}{\VerbatimEnvironment\begin{minted}{haskell}}{\end{minted}}
-\setminted{fontsize=\small,baselinestretch=1}
+\setminted{fontsize=\footnotesize,baselinestretch=1}
 
 % Include images
 \usepackage{graphics}
@@ -548,7 +548,6 @@ following points of the Cyber Assessment Framework:
         using relevant attributes -- e.g. failure modes.
 \end{itemize}
 
-
 \chapter{Conclusions}
 \label{conclusions}
 
@@ -562,61 +561,162 @@ following points of the Cyber Assessment Framework:
 % Only display section titles in the TOC
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}} 
 
+\newgeometry{left=1cm,right=1cm}
 \chapter{Source code}
 \label{source}
-    \todo{listing}
-    \todo{Where to obtain it}
-    \todo{How to install it}
 
-\chapter{Authoritative DNS services: an ADT}
-\label{dns-def}
+\todo{Where to obtain it}
+\todo{How to install it}
 
 \begin{code}
-Or "DNS"
-    [ Or "data corruption"
-        [ Or "repository corruption"
-            [ Counter "outdated information"
-                ( Basic "(D)DoS on hidden master" (0.8, 0.8) )
-                ( Or ""
-                    [ Basic "out-of-band replication" (0.6, 0.8)
-                    , Basic "tuning of SOA expiration parameters" (0.2, 0.2)
-                    ]
-                )
-            , Or "modified information"
-                [ Counter ""
-                    ( Basic "master compromised" (0.9, 1.0) )
-                    ( Basic "harden master" (0.8, 0.6) )
-                , Counter ""
-                    ( Basic "secondary compromised" (0.8, 0.8) )
-                    ( Basic "establish SLA and OLA with secondary operator" (0.7, 0.5) )
-                , Counter ""
-                    ( Basic "social engineering" (0.7, 0.7) )
-                    ( Basic "secure procedures and education" (0.9, 0.5) )
-                ]
-            , Or "domain name hijacking"
-                [ Basic "typosquatting" (0.1, 0.1)
-                , Basic "IDN abuse" (0.1, 0.1)
-                ]
-            ]
-        ]
-    , Or "privacy"
-        [ Basic "cache snooping" (0.4, 0.3)
-        , Basic "NSEC walk" (0.3, 0.3)
-        ]
-    , Or "denial of service"
-        [ Counter "system/application crash"
-            ( Basic "specially crafted packet" (0.4, 0.7) )
-            ( Basic "diversity OS and DNS server" (0.2, 0.5) )
-        , Counter "resource starvation"
-            ( Basic "(D)DoS attack" (0.6, 0.7) )
-            ( Or ""
-                [ Basic "system and network overprovisioning" (0.7, 0.6)
-                , Basic "deploy anycast" (0.6, 0.8)
-                ]
-            )
-        ]
+{-# LANGUAGE DeriveFunctor #-}
+
+-- Module exports omitted for brevety
+
+import Data.List (lookup, intercalate, words)
+import Data.Maybe (fromJust)
+import Text.Printf (printf)
+
+-- --------- --
+-- Structure --
+-- --------- --
+
+type Name = String
+
+data ADTree a 
+    = Basic   Name a
+    | And     Name [ADTree a]
+    | Or      Name [ADTree a]
+    | Counter Name (ADTree a) (ADTree a)
+    deriving (Show, Eq, Functor)
+
+-- | All possible attack-defense interactions that can lead to the root goal to
+-- be achieved.
+cutsets :: ADTree a -> [ADTree a]
+
+cutsets (Basic n a) = [Basic n a]
+
+-- One cutset from every children
+-- Cartesian product of all combinations
+cutsets (And n es) = map (And n) (mapM cutsets es)
+
+-- Any cutset from any children
+cutsets (Or n es) = map (Or n . (: [])) (concatMap cutsets es)
+
+-- One cutset from the attacker, one from the deffender
+-- Cartesian product of all combinations
+cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
+
+data Player = A | D deriving (Show, Eq)
+
+-- | Whether the given player is 'A'
+isAttacker :: Player -> Bool
+isAttacker A = True
+isAttacker D = False
+
+-- | Whether the given 'ADTree' is 'Basic'
+isBasic :: ADTree a -> Bool
+isBasic (Basic _ _) = True
+isBasic _           = False
+
+-- | Flatten the tree structure, filtering on the 'Player' of the nodes
+flatten :: (Player -> Bool) -- ^ Filter nodes according to their 'Player'
+        -> Player           -- ^ Player at the root node of the tree
+        -> ADTree a
+        -> [ADTree a]
+
+flatten f p c = (if f p then (c :) else id) (doFlatten f p c)
+    where
+        doFlatten f p c@Basic{}         = []
+        doFlatten f p c@(And _ cs)      = concatMap (flatten f p) cs
+        doFlatten f p c@(Or _ cs)       = concatMap (flatten f p) cs
+        doFlatten f p c@(Counter _ a d) = flatten f p a ++ flatten f (switchPlayer p) d
+
+-- ------- --
+-- Algebra --
+-- ------- --
+
+-- | Semantics for the algebra for a given player
+data PSemantics a = MkPSemantics
+    { plus    :: a -> a -> a -- ^ 'Or' operation
+    , zero    :: a           -- ^ 'Or' default
+    , times   :: a -> a -> a -- ^ 'And' operation
+    , one     :: a           -- ^ 'And' default
+    , counter :: a -> a -> a -- ^ 'Counter' operation
+    }
+
+-- | Semantics for the algebra of each player
+type Semantics a = Player -> PSemantics a
+
+-- | Switch players
+switchPlayer :: Player -> Player
+switchPlayer A = D
+switchPlayer D = A
+
+-- | Evaluate an 'ADTree' according to the specified 'Semantics'
+evaluate :: Semantics a -- ^ Evaluation algebra
+         -> Player      -- ^ Player at the root node
+         -> ADTree a
+         -> a
+
+evaluate _   _ (Basic _ a)     = a
+evaluate sem p (Or _ cs)       = foldr (plus (sem p) . evaluate sem p) (zero $ sem p) cs
+evaluate sem p (And _ cs)      = foldr (times (sem p) . evaluate sem p) (one $ sem p) cs
+evaluate sem p (Counter _ a d) = counter (sem p) (evaluate sem p a) (evaluate sem (switchPlayer p) d)
+
+-- --------- --
+-- Rendering --
+-- --------- --
+
+-- | Output the Graphviz representation for an 'ADTree'
+dot :: (Eq a)
+    => (a -> String) -- ^ Rendering function for 'Basic' event attributes
+                     -- ^ Rendered using Graphviz's support for HTML tags
+    -> Player        -- ^ Player at the root node
+    -> ADTree a
+    -> String
+
+dot fa pl r = unlines
+    [ "digraph {"
+    , "\trankdir=BT"
+    , "\tnode [style=\"bold,rounded\"]"
+    , unlines (nodes pl r)
+    , unlines (edges r)
+    , "}"
     ]
+    where
+        ids = [ (e', "node" ++ show i) | (e', i) <- zip (flatten (const True) pl r) [0 :: Int ..] ]
+        eventId e = fromJust $ lookup e ids
+
+        color A = "#ff0000"
+        color D = "#00ff00"
+
+        breaks = intercalate "<br/>" . words
+
+        basic = "\t%s [label=<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>,color=\"%s\",shape=box]"
+        nonBasic = "\t%s [label=<%s>,color=\"%s\",shape=%s]"
+
+        nodes p e@(Basic n a)     = [printf basic (eventId e) (breaks n) (fa a) (color p)]
+        nodes p e@(And n cs)      = printf nonBasic (eventId e) (breaks n) (color p) "triangle"
+                                  : concatMap (nodes p) cs
+        nodes p e@(Or n cs)       = printf nonBasic (eventId e) (breaks n) (color p) "invtriangle"
+                                  : concatMap (nodes p) cs
+        nodes p e@(Counter n a d) = printf nonBasic (eventId e) (breaks n) (color p) "diamond"
+                                  : nodes p a
+                                 ++ nodes (switchPlayer p) d
+
+        edges Basic{}           = []
+        edges e@(And _ cs)      = [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ]
+                               ++ concatMap edges cs
+        edges e@(Or _ cs)       = [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ]
+                               ++ concatMap edges cs
+        edges e@(Counter _ a d) = printf "\t%s -> %s" (eventId a) (eventId e)
+                                : printf "\t%s -> %s" (eventId d) (eventId e)
+                                : edges a
+                               ++ edges d
 \end{code}
+%stopzone
+\restoregeometry
 
 \chapter{Algebras}
 \label{algebras}
@@ -759,6 +859,56 @@ satisfiability _ = MkPSemantics
     , one     = True
     , counter = \x y -> x && not y
     }
+\end{code}
+
+\chapter{Authoritative DNS services: an ADT}
+\label{dns-def}
+
+\begin{code}
+Or "DNS"
+    [ Or "data corruption"
+        [ Or "repository corruption"
+            [ Counter "outdated information"
+                ( Basic "(D)DoS on hidden master" (0.8, 0.8) )
+                ( Or ""
+                    [ Basic "out-of-band replication" (0.6, 0.8)
+                    , Basic "tuning of SOA expiration parameters" (0.2, 0.2)
+                    ]
+                )
+            , Or "modified information"
+                [ Counter ""
+                    ( Basic "master compromised" (0.9, 1.0) )
+                    ( Basic "harden master" (0.8, 0.6) )
+                , Counter ""
+                    ( Basic "secondary compromised" (0.8, 0.8) )
+                    ( Basic "establish SLA and OLA with secondary operator" (0.7, 0.5) )
+                , Counter ""
+                    ( Basic "social engineering" (0.7, 0.7) )
+                    ( Basic "secure procedures and education" (0.9, 0.5) )
+                ]
+            , Or "domain name hijacking"
+                [ Basic "typosquatting" (0.1, 0.1)
+                , Basic "IDN abuse" (0.1, 0.1)
+                ]
+            ]
+        ]
+    , Or "privacy"
+        [ Basic "cache snooping" (0.4, 0.3)
+        , Basic "NSEC walk" (0.3, 0.3)
+        ]
+    , Or "denial of service"
+        [ Counter "system/application crash"
+            ( Basic "specially crafted packet" (0.4, 0.7) )
+            ( Basic "diversity OS and DNS server" (0.2, 0.5) )
+        , Counter "resource starvation"
+            ( Basic "(D)DoS attack" (0.6, 0.7) )
+            ( Or ""
+                [ Basic "system and network overprovisioning" (0.7, 0.6)
+                , Basic "deploy anycast" (0.6, 0.8)
+                ]
+            )
+        ]
+    ]
 \end{code}
 \end{appendices}
 
