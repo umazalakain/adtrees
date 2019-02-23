@@ -38,6 +38,8 @@ data ADTree a
     | Counter Name (ADTree a) (ADTree a)
     deriving (Show, Eq, Functor)
 
+-- | All possible attack-defense interactions that can lead to the root goal to
+-- be achieved.
 cutsets :: ADTree a -> [ADTree a]
 
 cutsets (Basic n a) = [Basic n a]
@@ -55,15 +57,22 @@ cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 
 data Player = A | D deriving (Show, Eq)
 
+-- | Whether the given player is 'A'
 isAttacker :: Player -> Bool
 isAttacker A = True
 isAttacker D = False
 
+-- | Whether the given 'ADTree' is 'Basic'
 isBasic :: ADTree a -> Bool
 isBasic (Basic _ _) = True
 isBasic _           = False
 
-flatten :: (Player -> Bool) -> Player -> ADTree a -> [ADTree a]
+-- | Flatten the tree structure, filtering on the 'Player' of the nodes
+flatten :: (Player -> Bool) -- ^ Filter nodes according to their 'Player'
+        -> Player           -- ^ Player at the root node of the tree
+        -> ADTree a
+        -> [ADTree a]
+
 flatten f p c = (if f p then (c :) else id) (doFlatten f p c)
     where
         doFlatten f p c@Basic{}         = []
@@ -75,21 +84,29 @@ flatten f p c = (if f p then (c :) else id) (doFlatten f p c)
 -- Algebra --
 -- ------- --
 
+-- | Semantics for the algebra for a given player
 data PSemantics a = MkPSemantics
-    { plus    :: a -> a -> a
-    , zero    :: a
-    , times   :: a -> a -> a
-    , one     :: a
-    , counter :: a -> a -> a
+    { plus    :: a -> a -> a -- ^ 'Or' operation
+    , zero    :: a           -- ^ 'Or' default
+    , times   :: a -> a -> a -- ^ 'And' operation
+    , one     :: a           -- ^ 'And' default
+    , counter :: a -> a -> a -- ^ 'Counter' operation
     }
 
+-- | Semantics for the algebra of each player
 type Semantics a = Player -> PSemantics a
 
+-- | Switch players
 switchPlayer :: Player -> Player
 switchPlayer A = D
 switchPlayer D = A
 
-evaluate :: Semantics a -> Player -> ADTree a -> a
+-- | Evaluate an 'ADTree' according to the specified 'Semantics'
+evaluate :: Semantics a -- ^ Evaluation algebra
+         -> Player      -- ^ Player at the root node
+         -> ADTree a
+         -> a
+
 evaluate _   _ (Basic _ a)     = a
 evaluate sem p (Or _ cs)       = foldr (plus (sem p) . evaluate sem p) (zero $ sem p) cs
 evaluate sem p (And _ cs)      = foldr (times (sem p) . evaluate sem p) (one $ sem p) cs
@@ -99,7 +116,14 @@ evaluate sem p (Counter _ a d) = counter (sem p) (evaluate sem p a) (evaluate se
 -- Rendering --
 -- --------- --
 
-dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
+-- | Output the Graphviz representation for an 'ADTree'
+dot :: (Eq a)
+    => (a -> String) -- ^ Rendering function for 'Basic' event attributes
+                     -- ^ Rendered using Graphviz's support for HTML tags
+    -> Player        -- ^ Player at the root node
+    -> ADTree a
+    -> String
+
 dot fa pl r = unlines
     [ "digraph {"
     , "\trankdir=BT"
