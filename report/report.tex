@@ -414,11 +414,17 @@ dot :: (Eq a) => (a -> String) -> Player -> ADTree a -> String
 \chapter{Evaluation}
 \label{evaluation}
 
-This section uses ADTrees to model the security issues involved in providing an
-authoritative DNS service for a top-level domain like \texttt{.uk}. It limits
-itself to analysing those weaknesses and defensive measures pertaining the
-provision of DNS services in itself, ignoring attacks that may take place
-further down the line -- these are extensively documented in
+This section aims to show the usefulness of ADTrees by providing an illustrative
+example of how it can be used to support the communication between a CA and an
+OES. It models the security issues involved in providing an authoritative DNS
+service for a top-level domain like \texttt{.uk}. This service is provided by
+the OES Nominet, and assessed by the CA Ofcom. The model in itself is a means
+for communication, the quantitative analyses performed on it can be used to
+determine and justify priorities.
+
+The model limits itself to those weaknesses and defensive measures pertaining
+the provision of DNS services in itself, ignoring attacks that may take place
+further down the line in the Internet -- these are extensively documented in
 \cite{weaknesses-dns}, \cite{rfc3833} and \cite{dns-bind-sec}.
 
 Both threats and protective measures are extracted from \cite[sections 3, 5, 7,
@@ -426,12 +432,10 @@ and 10]{secdns} and \cite{dns-threat-analysis}. Some are omitted, as they are
 not pertinent to the provisioning of a top-level domain. 
 
 Unfortunately, uniform statistical measurements concerning these threads and
-defensive measures is close to nonexistent. To demonstrate how ADTrees can be
-used to communicate and make decisions, I annotate the basic events in the tree
-with fabricated values -- these values are semi-arbitrary and reflect my
-personal judgment. For the definitions of the algebras on both attributes refer
-to Appendix \ref{algebras}.
-\todo{Add severity to the annex of algebras}
+defensive measures is close to nonexistent. To be able to demonstrate how
+ADTrees can be used to communicate and make decisions, I annotate the basic
+events in the tree with fabricated values -- these values are semi-arbitrary and
+reflect my personal judgment.
 
 \begin{description}
     \item [Difficulty] involved in performing an action. Takes into
@@ -443,16 +447,64 @@ to Appendix \ref{algebras}.
 \end{description}
 
 The resulting ADT is defined in Appendix \ref{dns-def} and can be seen in Figure
-\ref{dns-tree}.
+\ref{dns-tree}. In the following session, I first define some convenient
+shortcuts -- for their definition, refer to Appendix \ref{source}.
 
-\todo{what kind of computation do we make}
+\begin{code}
+    > import Data.List
+    > -- Shortcut to evaluate a tree's difficulty
+    > let evalDiff = evaluate difficulty A . fmap fst
+    > -- Shortcut to evaluate a tree's severity
+    > let evalSev = evaluate severity A . fmap snd
+    > -- Shortcut to filter basic events belonging to the defender
+    > let defMeasures = filter isBasic . flatten (not . isAttacker) A
+    > -- All cutsets in the DNS tree
+    > let cs = cutsets example
+\end{code}
+%stopzone
+
+I then perform several computations on the tree with the aim of showcasing what
+kind of conclusions ADTrees facilitates:
+
+\begin{code}
+    > -- Most severe attack
+    > let mostSevere =last $ sortOn evalSev cs
+    > mostSevere
+    Or "DNS"
+        [ Or "data corruption"
+            [ Or "repository corruption"
+                [ Counter "outdated information"
+                    (Basic "(D)DoS on hidden master" (4 % 5,4 % 5))
+                    (Or "" 
+                        [Basic "tuning of SOA expiration parameters" (1 % 5,1 % 5)])]]]
+    > 
+    > -- Defensive measures against the most severe attack
+    > defMeasures mostSevere
+    [Basic "tuning of SOA expiration parameters" (1 % 5,1 % 5)]
+    >
+    > -- Easiest attack
+    > head $ sortOn evalDiff cs
+    Or "DNS"
+        [ Or "data corruption" 
+            [ Or "repository corruption" 
+                [ Or "domain name hijacking"
+                    [ Basic "typosquatting" (1 % 10,1 % 10)]]]]
+    >
+    > -- Easy attacks, sorted by severity
+    > let easy = reverse $ sortOn evalSev $ filter ((< 0.4) . evalDiff) cs
+    >
+    > -- Defensive measures against those attacks, most effective first
+    > nub $ concatMap defMeasures easy
+    [Basic "diversity OS and DNS server" (1 % 5,1 % 2)]
+\end{code}
+%stopzone
 
 \newgeometry{top=0.5cm,bottom=0.5cm}
 \begin{sidewaysfigure}[h]
     \label{dns-tree}
     \centering
     \includegraphics[width=1.3\paperwidth]{dns}
-    \caption{}
+    \caption{An ADT modelling an authoritative DNS service}
 \end{sidewaysfigure}
 \restoregeometry
 
@@ -497,6 +549,8 @@ Cyber Assessment Framework:
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}} 
 
 \chapter{Source code}
+\label{source}
+    \todo{listing}
     \todo{Where to obtain it}
     \todo{How to install it}
 
