@@ -150,6 +150,18 @@ difficulty D = MkPSemantics
     }
 
 {-
+   Severity for the defender, assuming all attacker's actions are in place
+-}
+severity :: Semantics Rational
+severity _ = MkPSemantics
+    { plus    = max
+    , zero    = 0
+    , times   = (+)
+    , one     = 0
+    , counter = (-)
+    }
+
+{-
    Minimal cost for the attacker, assuming that all attacker's actions are in
    place and that resources are not reused.
 -}

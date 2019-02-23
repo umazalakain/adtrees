@@ -5,15 +5,6 @@ import System.Process (runCommand, waitForProcess)
 import Language.ADTrees
 
 
-severity :: Semantics Rational
-severity _ = MkPSemantics
-    { plus    = max
-    , zero    = 0
-    , times   = (+)
-    , one     = 0
-    , counter = (-)
-    }
-
 example :: ADTree (Rational, Rational)
 example =
     Or "DNS"
