@@ -128,8 +128,8 @@ dot fa pl r = unlines
     [ "digraph {"
     , "\trankdir=BT"
     , "\tnode [style=\"bold,rounded\"]"
-    , nodes pl r
-    , edges r
+    , unlines (nodes pl r)
+    , unlines (edges r)
     , "}"
     ]
     where
@@ -141,15 +141,18 @@ dot fa pl r = unlines
 
         breaks = intercalate "<br/>" . words
 
-        nodes p e@(Basic n a)     = printf "\t%s [label=<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>,color=\"%s\",shape=box]" (eventId e) (breaks n) (fa a) (color p)
-        nodes p e@(And n cs)      = unlines $ printf "\t%s [label=<%s>,color=\"%s\",shape=triangle]\n" (eventId e) (breaks n) (color p) : map (nodes p) cs
-        nodes p e@(Or n cs)       = unlines $ printf "\t%s [label=<%s>,color=\"%s\",shape=invtriangle]\n" (eventId e) (breaks n) (color p) : map (nodes p) cs
-        nodes p e@(Counter n a d) = printf "\t%s [label=<%s>,color=\"%s\",shape=diamond]\n" (eventId e) (breaks n) (color p) ++ nodes p a ++ nodes (switchPlayer p) d
+        basic = "\t%s [label=<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>,color=\"%s\",shape=box]"
+        nonBasic = "\t%s [label=<%s>,color=\"%s\",shape=%s]"
 
-        edges Basic{} = ""
-        edges e@(And _ cs)  = unlines $ [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ] ++ map edges cs
-        edges e@(Or _ cs)   = unlines $ [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ] ++ map edges cs
-        edges e@(Counter _ a d) = printf "\t%s -> %s" (eventId a) (eventId e) ++ printf "\t%s -> %s" (eventId d) (eventId e) ++ edges a ++ edges d
+        nodes p e@(Basic n a)     = [printf basic (eventId e) (breaks n) (fa a) (color p)]
+        nodes p e@(And n cs)      = printf nonBasic (eventId e) (breaks n) (color p) "triangle" : concatMap (nodes p) cs
+        nodes p e@(Or n cs)       = printf nonBasic (eventId e) (breaks n) (color p) "invtriangle" : concatMap (nodes p) cs
+        nodes p e@(Counter n a d) = printf nonBasic (eventId e) (breaks n) (color p) "diamond" : nodes p a ++ nodes (switchPlayer p) d
+
+        edges Basic{}           = []
+        edges e@(And _ cs)      = [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ] ++ concatMap edges cs
+        edges e@(Or _ cs)       = [ printf "\t%s -> %s" (eventId e') (eventId e) | e' <- cs ] ++ concatMap edges cs
+        edges e@(Counter _ a d) = printf "\t%s -> %s" (eventId a) (eventId e) : printf "\t%s -> %s" (eventId d) (eventId e) : edges a ++ edges d
 
 -- ---------------- --
 -- Example algebras --
