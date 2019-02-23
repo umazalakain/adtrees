@@ -3,16 +3,16 @@
 
 name:                adtrees
 version:             0.1.0.0
--- synopsis:
+synopsis:            Modelling, rendering and quantitative analysis on attack defense trees
 -- description:
 license:             GPL-3
 license-file:        LICENSE
 author:              Uma Zalakain
 maintainer:          ping@umazalakain.info
--- copyright:
+copyright:           Uma Zalakain
 category:            Language
 build-type:          Simple
-extra-source-files:  CHANGELOG.md
+-- extra-source-files:  CHANGELOG.md
 cabal-version:       >=1.10
 
 library

@@ -140,9 +140,6 @@ are more complex \cite{KordyDAG}.
 
 \todo{More on the technique itself?}
 
-% TODO: relate to NIS: CAF points
-%   IMPORTANT: How attack defense trees help
-
 \section{ADTrees}
 
 \textit{ADTrees}\footnote{\url{https://github.com/umazalakain/adtrees}}
@@ -561,12 +558,20 @@ following points of the Cyber Assessment Framework:
 % Only display section titles in the TOC
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}} 
 
-\newgeometry{left=1cm,right=1cm}
+\newgeometry{left=2cm,right=2cm}
 \chapter{Source code}
 \label{source}
 
-\todo{Where to obtain it}
-\todo{How to install it}
+The source code for ADTrees can be found at
+\url{https://github.com/umazalakain/adtrees}. A ready to install Haskell package
+is published at \url{https://hackage.haskell.org/package/adtrees-0.1.0.0}. It
+can be installed with \texttt{cabal} as follows:
+
+\begin{minted}{bash}
+cabal install adtrees
+\end{minted}
+
+Part of the code listing follows:
 
 \begin{code}
 {-# LANGUAGE DeriveFunctor #-}
@@ -593,16 +598,12 @@ data ADTree a
 -- | All possible attack-defense interactions that can lead to the root goal to
 -- be achieved.
 cutsets :: ADTree a -> [ADTree a]
-
 cutsets (Basic n a) = [Basic n a]
-
 -- One cutset from every children
 -- Cartesian product of all combinations
 cutsets (And n es) = map (And n) (mapM cutsets es)
-
 -- Any cutset from any children
 cutsets (Or n es) = map (Or n . (: [])) (concatMap cutsets es)
-
 -- One cutset from the attacker, one from the deffender
 -- Cartesian product of all combinations
 cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
