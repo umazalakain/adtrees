@@ -5,12 +5,15 @@ module Language.ADTrees
     , ADTree(..)
     , Semantics
     , PSemantics(..)
+    , isAttacker
+    , isBasic
     , evaluate
     , cutsets
     , flatten
     , dot
     , probability
     , difficulty
+    , severity
     , cost
     , skill
     , timeParallel
@@ -50,11 +53,23 @@ cutsets (Or n es) = map (Or n . (: [])) (concatMap cutsets es)
 -- Cartesian product of all combinations
 cutsets (Counter n a d) = Counter n <$> cutsets a <*> cutsets d
 
-flatten :: ADTree a -> [ADTree a]
-flatten c@Basic{}         = [c]
-flatten c@(And _ cs)      = c : concatMap flatten cs
-flatten c@(Or _ cs)       = c : concatMap flatten cs
-flatten c@(Counter _ a d) = c : flatten a ++ flatten d
+data Player = A | D deriving (Show, Eq)
+
+isAttacker :: Player -> Bool
+isAttacker A = True
+isAttacker D = False
+
+isBasic :: ADTree a -> Bool
+isBasic (Basic _ _) = True
+isBasic _           = False
+
+flatten :: (Player -> Bool) -> Player -> ADTree a -> [ADTree a]
+flatten f p c = (if f p then (c :) else id) (doFlatten f p c)
+    where
+        doFlatten f p c@Basic{}         = []
+        doFlatten f p c@(And _ cs)      = concatMap (flatten f p) cs
+        doFlatten f p c@(Or _ cs)       = concatMap (flatten f p) cs
+        doFlatten f p c@(Counter _ a d) = flatten f p a ++ flatten f (switchPlayer p) d
 
 -- ------- --
 -- Algebra --
@@ -67,8 +82,6 @@ data PSemantics a = MkPSemantics
     , one     :: a
     , counter :: a -> a -> a
     }
-
-data Player = A | D deriving (Show, Eq)
 
 type Semantics a = Player -> PSemantics a
 
@@ -96,7 +109,7 @@ dot fa pl r = unlines
     , "}"
     ]
     where
-        ids = [ (e', "node" ++ show i) | (e', i) <- zip (flatten r) [0 :: Int ..] ]
+        ids = [ (e', "node" ++ show i) | (e', i) <- zip (flatten (const True) pl r) [0 :: Int ..] ]
         eventId e = fromJust $ lookup e ids
 
         color A = "#ff0000"
