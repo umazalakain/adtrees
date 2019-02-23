@@ -13,8 +13,8 @@ example =
                 [ Counter "outdated information"
                     ( Basic "(D)DoS on hidden master" (0.8, 0.8) )
                     ( Or ""
-                        [ Basic "out-of-band replication" (0.2, 0.8)
-                        , Basic "tuning of SOA expiration parameters" (0.2, 0.3)
+                        [ Basic "out-of-band replication" (0.6, 0.8)
+                        , Basic "tuning of SOA expiration parameters" (0.2, 0.2)
                         ]
                     )
                 , Or "modified information"
@@ -29,8 +29,8 @@ example =
                         ( Basic "secure procedures and education" (0.9, 0.5) )
                     ]
                 , Or "domain name hijacking"
-                    [ Basic "typosquatting" (0.2, 0.1)
-                    , Basic "IDN abuse" (0.2, 0.1)
+                    [ Basic "typosquatting" (0.1, 0.1)
+                    , Basic "IDN abuse" (0.1, 0.1)
                     ]
                 ]
             ]
@@ -40,7 +40,7 @@ example =
             ]
         , Or "denial of service"
             [ Counter "system/application crash"
-                ( Basic "specially crafted packet" (0.5, 0.6) )
+                ( Basic "specially crafted packet" (0.4, 0.7) )
                 ( Basic "diversity OS and DNS server" (0.2, 0.5) )
             , Counter "resource starvation"
                 ( Basic "(D)DoS attack" (0.6, 0.7) )
