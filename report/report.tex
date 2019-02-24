@@ -95,16 +95,17 @@ familiarity with Haskell is required to fully understand how the proposed
 solution is built; providing an introduction to Haskell is out of the scope of
 this project.
 
-\S\ref{evaluation} demonstrates how a CA might use this tool to guide an asses
-an OES by performing a case analysis on the provision of the top-level domain
+\S\ref{evaluation} demonstrates how a CA might use this tool to guide and asses
+an OES: a case analysis is performed on the provision of the top-level domain
 \texttt{.uk} by the provider Nominet\footnote{\url{https://nominet.uk}}. As the
 designated regulator for digital infrastructure, Ofcom is the CA for Nominet. In
 its guidance pertaining NIS, Ofcom asks OES to assess themselves against the
-CAF\footnote{\url{https://www.ofcom.org.uk/phones-telecoms-and-internet/information-for-industry/guidance-network-information-systems-regulations}}.
-
+CAF\footnote{\url{https://www.ofcom.org.uk/phones-telecoms-and-internet/information-for-industry/guidance-network-information-systems-regulations}}:
 \S\ref{results} explains how ADTrees contributes to some of the points laid out
-by the CAF. Finally, \S\ref{conclusions} reflects on the work done and comments
-on possible extensions.
+in there.
+
+Finally, \S\ref{conclusions} reflects on the work done and comments on possible
+extensions.
 
 \chapter{A Haskell library for attack defense trees}
 \label{tool}
@@ -142,11 +143,12 @@ is a small Haskell library for attack defense trees with the following features:
     \item Overhead is kept at minimum: \textbf{simplicity} and \textbf{brevity}
         aid the understanding of what really matters.
     \item \textbf{Quantitative analysis} is provided through a \textbf{flexible}
-        interface were algebras are pluggable -- commonly used algebras are
-        already defined.
+        interface where algebras are pluggable -- commonly used algebras are
+        nevertheless provided.
     \item \textbf{Decision making} is enabled by quantitatively analysing
         \textbf{minimal cutsets}.
-    \item Trees can be translated into Graphviz and rendered as \textbf{images}.
+    \item Trees can be translated into Graphviz graphs and rendered as
+        \textbf{images}.
 \end{itemize}
 
 ADTrees is inspired by ADTool \footnote{\url{https://github.com/tahti/ADTool2}},
@@ -176,8 +178,8 @@ used for quantitative analysis. The leafs of the tree, represented by the
 constructor \mintinline{Haskell}{Basic} contain this information. Constructors
 \mintinline{Haskell}{And} and \mintinline{Haskell}{Or} represent logical gates
 containing a list of subtrees. The constructor \mintinline{Haskell}{Counter}
-represents two opposing nodes: its left subtree contains actions by the same
-player; its right subtree contains actions by its opponent.
+contains two opposing subnodes: on the left, actions by the same player; on the
+right, actions by its opponent.
 
 \begin{code}
 data ADTree a 
@@ -189,8 +191,8 @@ data ADTree a
 
 The example ADT in Figure \ref{example-adt} carries information about the
 probability and difficulty of each basic event. Such a tree can be represented
-by the type \mintinline{Haskell}{ADTree (Fractional, Fractional)} and
-encoded as follows:
+by the type \mintinline{Haskell}{ADTree (Rational, Rational)} and encoded as
+follows:
 
 \label{example-model}
 \begin{code}
@@ -220,7 +222,7 @@ Or "Bank Account" [
 
 \subsection{Quantitative analysis}
 
-To perform quantitative analysis over customisable basic event attributes, the
+To perform quantitative analysis over arbitrary basic event attributes, the
 user must be able to specify an algebra on them. There exist three cases which
 this algebra has to take into consideration: OR gates, AND gates, and COUNTER
 measures. Several such algebras exist \cite{KordyQuantitative}. ADTrees exposes
@@ -237,15 +239,16 @@ data PSemantics a = MkPSemantics
 \end{code}
 
 Algebras might need to change according to the player. For example, it might be
-desirable to computer the cost just for the attacker's actions. This is
-accommodated by making the algebra depend on the \mintinline{Haskell}{Player}:
+desirable to compute the cost of the attacker's actions, ignoring the
+defendant's. This is accommodated by making the algebra depend on the
+\mintinline{Haskell}{Player}:
 
 \begin{code}
 type Semantics a = Player -> PSemantics a
 \end{code}
 
-In the following example probability is defined -- which does not depend on who
-the current player is, thus that argument is ignored:
+In the following example probability is defined. As it does not depend on who
+the current player is, the current player argument is ignored:
 
 \begin{code}
 probability :: Semantics Rational
@@ -259,7 +262,7 @@ probability _ = MkPSemantics
 \end{code}
 
 On the other hand, the difficulty for the attacker depends on the player of each
-node:
+node, and thus different algebras are given depending on the player:
 
 \begin{code}
 difficulty :: Semantics Rational
@@ -306,8 +309,8 @@ structure-maitaining fuctor laws that \mintinline{Haskell}{ADTree a} follows.
 In the following example, \mintinline{Haskell}{fmap} applies a function to the
 attributes of all \mintinline{Haskell}{Basic} events of a tree, while
 \mintinline{Haskell}{snd} selects the second element of a tuple. Put together, a
-tree with two attributes is translated into a tree with just the second of those
-attributes:
+tree with a tuple containing two attributes is transformed into a tree with just
+the second of those attributes:
 
 \begin{code}
 > :t example
@@ -316,7 +319,7 @@ attributes:
     fmap snd example :: ADTree Rational
 \end{code}
 
-The user can then use the evaluation function as follows:
+The user can then evaluate that tree without modifying the existing algebra:
 
 \begin{code}
 > evaluate difficulty A (fmap snd example)
@@ -329,11 +332,11 @@ In standard fault trees, cutsets are sets of events that cause the top-level
 fault to occur. Minimal cutsets are those cutsets that do not contain any other
 cutsets as a subset.
 
-Attack defense trees introduce countermeasures nodes containing opposing
+Attack defense trees introduce countermeasure nodes containing opposing
 subnodes. I extend the concept of minimal cutsets to include countermeasure
 nodes, for which the combinatory product of the attacker's and the defender's
-cutsets are given. The resulting cutsets represent all possible attack-defense
-interaction which can lead to the root goal to be achieved.
+cutsets is given. The resulting cutsets represent all possible attack-defense
+interactions which can lead to the root goal to be achieved.
 
 \begin{code}
 cutsets :: ADTree a -> [ADTree a]
@@ -381,9 +384,9 @@ cutsets back into a common tree, then computing its cost for the defender.
 \subsection{Rendering}
 
 ADTrees uses Graphviz\footnote{\url{https://graphviz.org}} for tree rendering.
-ADTrees automatically translates a given tree into its Graphviz representation.
-Then Graphviz can be used to transform this declarative description of a graph
-into an image. The tree in Figure \ref{example-adt} is an example of this.
+Trees are automatically translated into their Graphviz representation.
+Then Graphviz can be used to transform these declarative descriptions of graphs
+into images. The tree in Figure \ref{example-adt} is an example of this.
 This idea was inspired by \textit{fault-tree}, a small Haskell library for fault
 trees\footnote{\url{https://github.com/tomahawkins/fault-tree}}. Unfortunately
 Graphviz does not include node shapes for logic gates, and its support for
@@ -436,7 +439,7 @@ reflect my personal judgment.
 
 The resulting ADT is defined in Appendix \ref{dns-def} and can be seen in Figure
 \ref{dns-tree}. In the following session, I first define some convenient
-shortcuts -- for their definition, refer to Appendix \ref{source}.
+shortcuts -- definition can be found in Appendix \ref{source}.
 
 \begin{code}
     > import Data.List
@@ -538,8 +541,8 @@ following points of the Cyber Assessment Framework:
 \chapter{Conclusions}
 \label{conclusions}
 
-Fault trees have been extensively used in safety-critical system: they are a
-common ground for communication, and quantitative analysis that aids decision
+Fault trees have been extensively used in safety-critical systems: they are a
+common ground for communication, and quantitative analyses that aids decision
 making can be performed on them. Security-critical systems have slightly
 different requirements -- fault trees need to be adapted to them. Several such
 adaptations have been proposed, one of them is attack defense trees, where every
@@ -561,9 +564,9 @@ Similarly, the library can be made into an application (graphical or not), but
 although this would boost its usability, its expressive power and flexibility
 would be hindered. 
 
-All the features mentioned above were implemented into relatively simple and
-brief code. This makes ADTrees a good candidate for further exploration and
-learning.
+All the features mentioned above were implemented with relatively simple and
+brief code. This makes ADTrees a good candidate for learning and further
+exploration.
 
 \bibliographystyle{apalike}
 \bibliography{bibliography}
