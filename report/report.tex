@@ -102,10 +102,9 @@ designated regulator for digital infrastructure, Ofcom is the CA for Nominet. In
 its guidance pertaining NIS, Ofcom asks OES to assess themselves against the
 CAF\footnote{\url{https://www.ofcom.org.uk/phones-telecoms-and-internet/information-for-industry/guidance-network-information-systems-regulations}}.
 
-\S\ref{results} points out which of the points laid out in the CAF has the usage
-of ADTrees tool contributed to. \todo{}
-
-\S\ref{conclusions} end with \todo{}.
+\S\ref{results} explains how ADTrees contributes to some of the points laid out
+by the CAF. Finally, \S\ref{conclusions} reflects on the work done and comments
+on possible extensions.
 
 \chapter{A Haskell library for attack defense trees}
 \label{tool}
@@ -118,15 +117,13 @@ the way in which basic events interact to lead to an undesired behaviour
 They consist of nodes and leafs: each node is a logical gate; each leaf a basic
 event. This structure makes fault trees attractive for quantitative evaluation.
 It is important to note that all basic events in a fault tree \textit{must} be
-unique and independent. If not the case, every directed acyclic graph
-representing a fault model can be rewritten as a fault tree.  \todo{citation
-needed}
+unique and independent. 
 
 Attack trees take the idea of fault trees and adapt it to model attack scenarios
-in security-critical systems \cite{Schneier1999} \cite{Brooke2003}
-\cite{NaiFovino2009}\todo{get rid of some citations}: an attacker's objective
-(at the root of the tree) is repeatedly refined into subgoals connected by
-logical gates. Yet, this model is unable to represent any defensive measure.
+in security-critical systems (see \cite{Schneier1999}, \cite{Brooke2003} and
+\cite{NaiFovino2009}). An attacker's objective (at the root of the tree) is
+repeatedly refined into subgoals connected by logical gates. Yet, this model
+does not represent any defensive measures.
 
 Attack defense trees (ADTs) extend attack trees by introducing nodes that
 represent defensive measures \cite{KordyFoundations}. Every node is thus an
@@ -136,24 +133,20 @@ conjunctive. To allow a quantitative evaluation of ADTs, nodes have to be
 independent of each other -- alternative proposals relying on DAGs exist, but
 are more complex \cite{KordyDAG}.
 
-\todo{More on the technique itself?}
-
 \section{ADTrees}
 
 \textit{ADTrees}\footnote{\url{https://github.com/umazalakain/adtrees}}
-is a small Haskell library for attack defense trees. It is designed with the
-following goals in mind:
+is a small Haskell library for attack defense trees with the following features:
 
-\todo{this feels too short}
 \begin{itemize}
-    \item To provide a \textbf{small and simple} interface for modelling attack
-        defense trees while remaining \textbf{extendable}. \todo{mention no
-        parser}
-    \item To provide a \textbf{flexible} interface to \textbf{quantitative
-        analysis} while providing some commonly used algebras.
-    \item To \textbf{aid decision making} by generating minimal cutsets of the
-        tree.
-    \item To \textbf{visualise} any modelled tree.
+    \item Overhead is kept at minimum: \textbf{simplicity} and \textbf{brevity}
+        aid the understanding of what really matters.
+    \item \textbf{Quantitative analysis} is provided through a \textbf{flexible}
+        interface were algebras are pluggable -- commonly used algebras are
+        already defined.
+    \item \textbf{Decision making} is enabled by quantitatively analysing
+        \textbf{minimal cutsets}.
+    \item Trees can be translated into Graphviz and rendered as \textbf{images}.
 \end{itemize}
 
 ADTrees is inspired by ADTool \footnote{\url{https://github.com/tahti/ADTool2}},
@@ -585,9 +578,10 @@ learning.
 \label{source}
 
 The source code for ADTrees can be found at
-\url{https://github.com/umazalakain/adtrees}. A ready to install Haskell package
-is published at \url{https://hackage.haskell.org/package/adtrees-0.1.0.0}. It
-can be installed with \texttt{cabal} as follows:
+\url{https://github.com/umazalakain/adtrees} -- this includes the source code of
+this report. A ready to install Haskell package is published at
+\url{https://hackage.haskell.org/package/adtrees-0.1.0.0}. It can be installed
+with \texttt{cabal} as follows:
 
 \begin{minted}{bash}
 cabal install adtrees
