@@ -107,8 +107,6 @@ of ADTrees tool contributed to. \todo{}
 
 \S\ref{conclusions} end with \todo{}.
 
-\todo{document code}
-
 \chapter{A Haskell library for attack defense trees}
 \label{tool}
 
@@ -308,9 +306,9 @@ evaluate sem p (Counter _ a d)
 
 As shown in \ref{example-model}, attack defense trees may contain multiple
 attributes. To facilitate the reuse of algebras, a tree with multiple attributes
-can be translated into a tree with a single attribute, to which an already
-defined algebra can be applied. This translation is possible because
-\mintinline{Haskell}{ADTree a} follows the functor laws.\todo{}
+can be transformed into a tree with a single attribute, to which an already
+defined algebra can be applied. This transformation is enabled by the
+structure-maitaining fuctor laws that \mintinline{Haskell}{ADTree a} follows.
 
 In the following example, \mintinline{Haskell}{fmap} applies a function to the
 attributes of all \mintinline{Haskell}{Basic} events of a tree, while
@@ -517,7 +515,6 @@ analyses is  independent of ADTrees; scenarios can be modelled more thoroughly.
 Regardless, the produced example highlights how ADTrees contributes to the
 following points of the Cyber Assessment Framework:
 
-
 \begin{itemize}
     \item 
         \textbf{A2a.} \textit{Your organisational process ensures that security
@@ -548,7 +545,32 @@ following points of the Cyber Assessment Framework:
 \chapter{Conclusions}
 \label{conclusions}
 
-\todo{mention LOC}
+Fault trees have been extensively used in safety-critical system: they are a
+common ground for communication, and quantitative analysis that aids decision
+making can be performed on them. Security-critical systems have slightly
+different requirements -- fault trees need to be adapted to them. Several such
+adaptations have been proposed, one of them is attack defense trees, where every
+node belongs to either the attacker or the defender.
+
+I presented a small Haskell library that implements attack defense trees. The
+leaf attributes are generalised and can contain any type of attributes -- these
+can later be used to perform quantitative analysis on the tree, given an algebra
+on them.  The library also supports the extraction of minimal cutsets.
+Furthermore, trees can be translated into Graphviz and rendered as images.
+
+I demonstrated, by means of an example use case, how this library can be used to
+aid decision making. An OES can then communicate these quantitatively justified
+decisions to a CA, which can asses their correctness.
+
+Support for parsing attack defense trees can be added to the library. This would
+improve usability, but limit the types of attributes that a leaf may contain.
+Similarly, the library can be made into an application (graphical or not), but
+although this would boost its usability, its expressive power and flexibility
+would be hindered. 
+
+All the features mentioned above were implemented into relatively simple and
+brief code. This makes ADTrees a good candidate for further exploration and
+learning.
 
 \bibliographystyle{apalike}
 \bibliography{bibliography}
